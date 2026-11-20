@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render entry.png for news-image-20261119 - agent 2, 2/3 (noble-robin-77).
 
-Layout "THE DAY UNFOLDS, corrected" (rebuild #2): the left timeline rail
+Layout "THE DAY UNFOLDS, corrected" (rebuild #3): the left timeline rail
 is GONE - the full width goes to the page. APEC opens at the TOP as three
 big scene panels. Masthead (giant serif date) -> continent count strip ->
 "day in numbers" strip -> 3 hero scene panels -> 10 scene cards (2 rows x
@@ -221,24 +221,48 @@ def project(lon, lat, mx, my, mw, mh):
 # three leaders are recognisable people, not blank dots.
 
 def _face(d, cx, cy, r, skin, hair, hair_style):
+    # ears, so the head reads as a person, not a floating blob
+    d.ellipse([cx - r - 3, cy - r * 0.1, cx - r + 3, cy + r * 0.25],
+              fill=skin, outline=INK)
+    d.ellipse([cx + r - 3, cy - r * 0.1, cx + r + 3, cy + r * 0.25],
+              fill=skin, outline=INK)
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=skin, outline=INK, width=2)
-    if hair_style == "blond-side":  # Trump: blond sweep
+    if hair_style == "blond-side":  # Trump: blond sweep + strand lines
         d.pieslice([cx - r, cy - r, cx + r, cy + r * 0.4], 180, 360,
                    fill=(232, 200, 120), outline=INK)
         d.rectangle([cx - r, cy - r * 0.55, cx + r * 0.9, cy - r * 0.1],
                     fill=(232, 200, 120))
-    elif hair_style == "black-neat":  # Xi: neat black hair
+        for sx in (-0.5, -0.1, 0.3):
+            d.line([cx + sx * r, cy - r * 0.85, cx + (sx + 0.2) * r,
+                    cy - r * 0.35], fill=(190, 150, 60), width=2)
+    elif hair_style == "black-neat":  # Xi: neat black hair + side part
         d.pieslice([cx - r, cy - r, cx + r, cy + r * 0.2], 180, 360,
                    fill=(30, 30, 30), outline=INK)
-    else:  # Putin: grey, receding
+        d.line([cx - r * 0.2, cy - r * 0.95, cx - r * 0.2, cy - r * 0.25],
+               fill=(90, 90, 90), width=2)
+    else:  # Putin: grey, receding, a few side strands
         d.arc([cx - r, cy - r, cx + r, cy + r * 0.3], 180, 360,
               fill=(170, 170, 170), width=3)
-    d.ellipse([cx - r * 0.45, cy - r * 0.1, cx - r * 0.3, cy + r * 0.05],
-              fill=INK)
-    d.ellipse([cx + r * 0.3, cy - r * 0.1, cx + r * 0.45, cy + r * 0.05],
-              fill=INK)
-    d.arc([cx - r * 0.35, cy + r * 0.15, cx + r * 0.35, cy + r * 0.7],
-          10, 170, fill=INK, width=2)
+        for sx in (-0.7, 0.7):
+            d.line([cx + sx * r, cy - r * 0.55, cx + sx * r, cy - r * 0.1],
+                   fill=(150, 150, 150), width=2)
+    # eyebrows
+    d.line([cx - r * 0.55, cy - r * 0.28, cx - r * 0.20, cy - r * 0.34],
+           fill=INK, width=2)
+    d.line([cx + r * 0.20, cy - r * 0.34, cx + r * 0.55, cy - r * 0.28],
+           fill=INK, width=2)
+    # eyes: white with a dark pupil, so the gaze reads
+    for ex in (-0.38, 0.38):
+        d.ellipse([cx + ex * r - r * 0.14, cy - r * 0.12,
+                   cx + ex * r + r * 0.14, cy + r * 0.12],
+                  fill=(255, 255, 255), outline=INK)
+        d.ellipse([cx + ex * r - r * 0.06, cy - r * 0.06,
+                   cx + ex * r + r * 0.06, cy + r * 0.06], fill=INK)
+    # nose + smile
+    d.line([cx, cy + r * 0.05, cx - r * 0.08, cy + r * 0.28], fill=INK,
+           width=2)
+    d.arc([cx - r * 0.35, cy + r * 0.25, cx + r * 0.35, cy + r * 0.75],
+          15, 165, fill=INK, width=2)
 
 
 def ill_apec(d, x, y, w, h):
@@ -376,27 +400,30 @@ def ill_icj(d, x, y, w, h):
 
 
 def ill_cop(d, x, y, w, h):
-    """Hero 3: globe + thermometer + FOSSIL FUELS document struck through.
+    """Hero 3: globe + thermometer + clean FOSSIL FUELS document.
 
-    Fills the whole panel: a big globe on the left, a tall red
-    thermometer in the middle, the struck-through draft document on the
-    right, and a navy strip along the bottom carrying the aid figure.
+    Fills the whole panel: a big clean globe on the left (solid blue,
+    solid green land, no texture), a tall red thermometer in the middle,
+    the draft document on the right with NO strikethrough anywhere, a
+    CUT stamp tucked inside the document, and a navy strip along the
+    bottom carrying the aid figure.
     """
     d.rectangle([x, y, x + w, y + h], fill=(200, 225, 210))
-    # globe, left - big, centred in the upper area
+    # globe, left - big, smooth: solid blue disc, two solid green land
+    # masses drawn as polygons (no dither, no speckled texture)
     cx, cy, r = x + w * 0.24, y + h * 0.36, w * 0.155
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(90, 160, 200),
               outline=INK, width=2)
-    d.ellipse([cx - r * 0.6, cy - r * 0.55, cx + r * 0.15, cy + r * 0.05],
-              fill=(60, 140, 90), outline=INK)
-    d.ellipse([cx - r * 0.15, cy + r * 0.15, cx + r * 0.65, cy + r * 0.7],
-              fill=(60, 140, 90), outline=INK)
+    d.polygon([(cx - r * 0.75, cy - r * 0.45), (cx - r * 0.25, cy - r * 0.70),
+               (cx + r * 0.20, cy - r * 0.55), (cx + r * 0.05, cy - r * 0.05),
+               (cx - r * 0.35, cy + r * 0.05), (cx - r * 0.80, cy - r * 0.10)],
+              fill=(60, 140, 90))
+    d.polygon([(cx - r * 0.10, cy + r * 0.20), (cx + r * 0.45, cy + r * 0.10),
+               (cx + r * 0.70, cy + r * 0.45), (cx + r * 0.30, cy + r * 0.75),
+               (cx - r * 0.20, cy + r * 0.60)],
+              fill=(60, 140, 90))
     d.arc([cx - r * 0.8, cy - r * 0.8, cx + r * 0.8, cy + r * 0.8], 200, 340,
-          fill=(255, 255, 255), width=2)
-    # heat waves above the globe
-    for i, wx in enumerate([0.10, 0.20, 0.30]):
-        d.arc([x + wx * w, y + 4, x + (wx + 0.06) * w, y + 18], 180, 360,
-              fill=RED, width=2)
+          fill=(255, 255, 255), width=3)
     # thermometer, middle - tall, red mercury near the top
     tx = x + w * 0.47
     d.rounded_rectangle([tx, y + h * 0.08, tx + w * 0.055, y + h * 0.62],
@@ -406,7 +433,7 @@ def ill_cop(d, x, y, w, h):
     d.ellipse([tx - w * 0.025, y + h * 0.58, tx + w * 0.08, y + h * 0.74],
               fill=RED, outline=INK)
     d.text((tx - w * 0.02, y + h * 0.76), "HOT", font=sans_b(9), fill=RED)
-    # document, right
+    # document, right - CLEAN: no red line crosses any letter
     dx, dy, dw, dh = x + w * 0.60, y + h * 0.06, w * 0.37, h * 0.60
     d.rectangle([dx, dy, dx + dw, dy + dh], fill=CREAM, outline=INK, width=2)
     f = sans_b(10)
@@ -414,17 +441,16 @@ def ill_cop(d, x, y, w, h):
     d.line([dx + 5, dy + 20, dx + dw - 5, dy + 20], fill=INK, width=1)
     d.text((dx + 5, dy + 26), "FOSSIL", font=sans_b(13), fill=INK)
     d.text((dx + 5, dy + 44), "FUELS", font=sans_b(13), fill=INK)
-    d.line([dx + 3, dy + 34, dx + dw - 3, dy + 30], fill=RED, width=4)
-    d.line([dx + 3, dy + 54, dx + dw - 3, dy + 50], fill=RED, width=4)
     d.text((dx + 5, dy + 62), "ADAPTATION AID:", font=sans(9), fill=GREY)
     d.text((dx + 5, dy + 73), "$120bn", font=sans_b(10), fill=RED)
-    # CUT stamp overlapping the document's lower corner
+    # CUT stamp, fully INSIDE the document's lower-right corner: it
+    # touches no letter and pokes out of nothing
     sf = sans_b(14)
     st = "CUT"
     tw = d.textlength(st, font=sf)
-    d.rectangle([dx + dw - tw - 18, dy + dh - 4,
-                 dx + dw - 8, dy + dh + 18], fill=RED, outline=INK)
-    d.text((dx + dw - tw - 13, dy + dh - 2), st, font=sf,
+    d.rectangle([dx + dw - tw - 16, dy + dh - 24,
+                 dx + dw - 6, dy + dh - 4], fill=RED, outline=INK)
+    d.text((dx + dw - tw - 11, dy + dh - 22), st, font=sf,
            fill=(255, 255, 255))
     # navy strip along the bottom with the aid figure
     d.rectangle([x, y + h * 0.82, x + w, y + h], fill=NAVY)
@@ -525,8 +551,9 @@ def ill_riyadh(d, x, y, w, h):
 
 
 def ill_cyclone(d, x, y, w, h):
-    """Cyclone Akvan: a big spiral over the sea, a coastline with houses
-    and a red arrow showing the storm moving toward land."""
+    """Cyclone Akvan: ONE asymmetric spiral arm over the sea (never
+    concentric rings, never a target), a dashed red trajectory arrow to
+    the coast, and a clear ODISHA label in the empty top-left corner."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[0])
     # sea
     d.rectangle([x, y + h * 0.62, x + w, y + h], fill=(120, 180, 210))
@@ -544,19 +571,42 @@ def ill_cyclone(d, x, y, w, h):
     for wy in (0.80, 0.90):
         d.arc([x + w * 0.05, y + h * wy, x + w * 0.35, y + h * wy + 8],
               180, 360, fill=(255, 255, 255), width=2)
-    # big spiral, centred left, radii scaled to height (max radius keeps
-    # the arcs inside the illustration box)
-    cx, cy = x + w * 0.36, y + h * 0.44
-    for r in (0.12, 0.20, 0.28, 0.36, 0.41):
-        rr = h * r
-        d.arc([cx - rr, cy - rr, cx + rr, cy + rr], 20, 300, fill=NAVY,
-              width=3)
+    # ODISHA label, top-left, in empty sky - clear of the spiral below
+    lf = sans_b(9)
+    lt = "ODISHA"
+    lw = d.textlength(lt, font=lf)
+    d.rectangle([x + 4, y + 3, x + 4 + lw + 8, y + 15], fill=CREAM,
+                outline=INK)
+    d.text((x + 8, y + 4), lt, font=lf, fill=NAVY)
+    # asymmetric spiral: ONE arm curling outwards, radius growing with
+    # angle, centre offset left; its tail continues from the top of the
+    # curl and sweeps RIGHT and down, staying clear of the ODISHA label
+    # (which ends at ~0.29w). No closed rings at all.
+    cx, cy = x + w * 0.34, y + h * 0.50
+    pts = []
+    for deg in range(0, 721, 6):
+        a = math.radians(deg - 90)
+        r = h * (0.015 + 0.00042 * deg)
+        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    d.line(pts, fill=NAVY, width=3)
+    tail = []
+    for t in range(0, 16):
+        a = math.radians(270 + t * 5)
+        r = h * (0.32 + 0.008 * t)
+        tail.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    d.line(tail, fill=NAVY, width=2)
     d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=RED)
-    # red arrow from the spiral toward the coast
-    d.line([cx + w * 0.16, cy + h * 0.10, x + w * 0.60, cy + h * 0.16],
-           fill=RED, width=2)
-    d.polygon([(x + w * 0.60, cy + h * 0.16), (x + w * 0.55, cy + h * 0.10),
-               (x + w * 0.55, cy + h * 0.22)], fill=RED)
+    # dashed red trajectory arrow from the spiral toward the coast
+    ax0, ay0 = cx + w * 0.17, cy + h * 0.12
+    ax1, ay1 = x + w * 0.60, cy + h * 0.20
+    nseg = 7
+    for i in range(nseg):
+        if i % 2 == 0:
+            t0, t1 = i / nseg, (i + 1) / nseg
+            d.line([(ax0 + (ax1 - ax0) * t0, ay0 + (ay1 - ay0) * t0),
+                    (ax0 + (ax1 - ax0) * t1, ay0 + (ay1 - ay0) * t1)],
+                   fill=RED, width=2)
+    d.polygon([(ax1, ay1), (ax1 - 8, ay1 - 4), (ax1 - 8, ay1 + 5)], fill=RED)
 
 
 def ill_seoul(d, x, y, w, h):
@@ -690,16 +740,17 @@ def ill_anthropic(d, x, y, w, h):
 
 
 def ill_gta(d, x, y, w, h):
-    """GTA VI: a purple dusk city skyline, a sunset, a car on the street
-    below and a big VI logo. No STRIKE label anywhere."""
+    """GTA VI: a purple dusk city skyline, a sunset, a BIG white game
+    controller front and centre (so the card reads as a video game at
+    a glance), a big VI logo top-right with OUT NOW under it, and a
+    small red car on the street below. No STRIKE label anywhere."""
     d.rectangle([x, y, x + w, y + h], fill=(196, 150, 216))
-    # sunset, top centre-left - clear of the VI logo on the right
-    d.ellipse([x + w * 0.36, y + h * 0.08, x + w * 0.36 + 24,
-               y + h * 0.08 + 24], fill=(250, 200, 90), outline=INK)
+    # sunset, top-left corner - clear of the VI logo on the right
+    d.ellipse([x + w * 0.04, y + h * 0.04, x + w * 0.04 + 20,
+               y + h * 0.04 + 20], fill=(250, 200, 90), outline=INK)
     # skyline silhouettes on both sides
     for bx, bw, bh in [(0.02, 0.10, 0.34), (0.14, 0.09, 0.50),
-                       (0.25, 0.10, 0.30), (0.80, 0.09, 0.46),
-                       (0.90, 0.09, 0.32)]:
+                       (0.80, 0.09, 0.46), (0.90, 0.09, 0.32)]:
         d.rectangle([x + bx * w, y + h * 0.78 - bh * h, x + (bx + bw) * w,
                      y + h * 0.78], fill=NAVY)
         for wy in (0.78 - bh * h + 0.06, 0.78 - bh * h + 0.14):
@@ -708,46 +759,65 @@ def ill_gta(d, x, y, w, h):
     # street
     d.rectangle([x, y + h * 0.78, x + w, y + h], fill=(60, 50, 70))
     d.line([x, y + h * 0.90, x + w, y + h * 0.90], fill=GOLD, width=2)
-    # car, side view, centre-left
-    cx0, cy = x + w * 0.30, y + h * 0.72
-    d.rounded_rectangle([cx0, cy - 8, cx0 + w * 0.34, cy + 6], radius=5,
+    # big white game controller, centre: body, grips, d-pad, buttons,
+    # two sticks. It sits above the street, clear of VI / OUT NOW.
+    gx0, gy0 = x + w * 0.20, y + h * 0.26
+    gx1, gy1 = x + w * 0.68, y + h * 0.68
+    d.rounded_rectangle([gx0, gy0, gx1, gy1], radius=8, fill=(255, 255, 255),
+                        outline=INK, width=2)
+    d.ellipse([gx0 - 2, gy1 - 10, gx0 + 14, gy1 + 6], fill=(255, 255, 255),
+              outline=INK, width=2)
+    d.ellipse([gx1 - 14, gy1 - 10, gx1 + 2, gy1 + 6], fill=(255, 255, 255),
+              outline=INK, width=2)
+    # d-pad, left
+    dpx, dpy = gx0 + w * 0.09, (gy0 + gy1) / 2
+    d.rectangle([dpx - 3, dpy - 9, dpx + 3, dpy + 9], fill=INK)
+    d.rectangle([dpx - 9, dpy - 3, dpx + 9, dpy + 3], fill=INK)
+    # four action buttons, right
+    bcx, bcy = gx1 - w * 0.09, (gy0 + gy1) / 2
+    for dxb, dyb, col in [(0, -8, (60, 140, 90)), (8, 0, RED),
+                          (0, 8, NAVY), (-8, 0, GOLD)]:
+        d.ellipse([bcx + dxb - 4, bcy + dyb - 4, bcx + dxb + 4,
+                   bcy + dyb + 4], fill=col, outline=INK)
+    # two thumb sticks
+    for sx in (gx0 + w * 0.24, gx1 - w * 0.24):
+        d.ellipse([sx - 5, (gy0 + gy1) / 2 + 2, sx + 5,
+                   (gy0 + gy1) / 2 + 12], fill=(200, 200, 200), outline=INK)
+    # small red car, side view, bottom-left on the street - kept clear
+    # of the controller's left grip (car ends at 0.17w, grip starts 0.20w)
+    cx0, cy = x + w * 0.02, y + h * 0.72
+    d.rounded_rectangle([cx0, cy - 6, cx0 + w * 0.15, cy + 4], radius=4,
                         fill=RED, outline=INK)
-    d.polygon([(cx0 + w * 0.08, cy - 8), (cx0 + w * 0.12, cy - 18),
-               (cx0 + w * 0.24, cy - 18), (cx0 + w * 0.28, cy - 8)],
+    d.polygon([(cx0 + w * 0.03, cy - 6), (cx0 + w * 0.05, cy - 12),
+               (cx0 + w * 0.10, cy - 12), (cx0 + w * 0.12, cy - 6)],
               fill=RED, outline=INK)
-    d.rectangle([cx0 + w * 0.13, cy - 16, cx0 + w * 0.23, cy - 8],
-                fill=SKY, outline=INK)
-    for wx in (0.07, 0.25):
-        d.ellipse([cx0 + wx * w - 5, cy + 2, cx0 + wx * w + 5, cy + 12],
+    for wx in (0.03, 0.115):
+        d.ellipse([cx0 + wx * w - 4, cy + 1, cx0 + wx * w + 4, cy + 9],
                   fill=INK, outline=(255, 255, 255))
-    # big VI logo, top right
-    d.text((x + w * 0.72, y + h * 0.02), "VI", font=serif_b(24),
+    # big VI logo, top right, with OUT NOW below it - clear of the
+    # controller (controller top is 0.26h, VI ends well above it)
+    d.text((x + w * 0.78, y + h * 0.01), "VI", font=serif_b(30),
            fill=(255, 255, 255))
-    d.text((x + w * 0.68, y + h * 0.44), "OUT NOW", font=sans_b(9),
+    d.text((x + w * 0.70, y + h * 0.52), "OUT NOW", font=sans_b(9),
            fill=(255, 255, 255))
 
 
 def ill_bogota(d, x, y, w, h):
     """Bogota: a street protest - buildings behind, a two-row crowd of
-    marchers with raised placards, a PARO NACIONAL banner on top and a
-    Colombian tricolour stripe. No STRIKE label."""
+    marchers with raised BLANK placards, and a Colombian tricolour
+    stripe at the top. NO text inside the illustration at all: the
+    dark "PARO NACIONAL" banner above the card is the only label.
+    No STRIKE label."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[3])
     # buildings behind the crowd
     for bx, bw, bh in [(0.02, 0.14, 0.34), (0.18, 0.12, 0.44),
                        (0.70, 0.13, 0.38), (0.85, 0.13, 0.46)]:
         d.rectangle([x + bx * w, y + h * 0.52 - bh * h, x + (bx + bw) * w,
                      y + h * 0.52], fill=NAVY)
-    # Colombian tricolour stripe + PARO NACIONAL banner, top
+    # Colombian tricolour stripe, top - colour only, no letters
     d.rectangle([x, y, x + w, y + h * 0.10], fill=GOLD)
     d.rectangle([x, y + h * 0.10, x + w, y + h * 0.16], fill=NAVY)
     d.rectangle([x, y + h * 0.16, x + w, y + h * 0.22], fill=RED)
-    bf = sans_b(10)
-    bt = "PARO NACIONAL"
-    tw = d.textlength(bt, font=bf)
-    d.rectangle([x + (w - tw) / 2 - 6, y + h * 0.24,
-                 x + (w - tw) / 2 + tw + 6, y + h * 0.24 + 14],
-                fill=CREAM, outline=INK)
-    d.text((x + (w - tw) / 2, y + h * 0.24 + 2), bt, font=bf, fill=INK)
     # crowd: two rows of marchers, heads + bodies, varied colours
     cols = [RED, NAVY, (60, 140, 90), GOLD, RED, NAVY]
     for i, cx in enumerate([0.10, 0.26, 0.42, 0.58, 0.74, 0.90]):
@@ -771,9 +841,12 @@ def ill_bogota(d, x, y, w, h):
 
 
 def ill_nairobi(d, x, y, w, h):
-    """Nairobi marathon: a real runner mid-stride on a track, leaning
-    into a checkered finish gantry, with a red BANNED 3 YEARS stamp.
-    No stick figure - torso, shorts, and thick limbs."""
+    """Nairobi marathon: a SMALL runner mid-stride on a track, leaning
+    into a checkered finish gantry, with a red BANNED 3 YEARS stamp in
+    the TOP-RIGHT corner of the illustration, far from any headline.
+    Every coordinate is a fraction of h, so the runner (head to shoes)
+    ends well inside the illustration - nothing touches the headline
+    below. No stick figure: torso, shorts, thick limbs."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[1])
     # sky + distant stands
     d.rectangle([x, y + h * 0.52, x + w, y + h * 0.60], fill=NAVY)
@@ -785,50 +858,62 @@ def ill_nairobi(d, x, y, w, h):
     d.rectangle([x, y + h * 0.60, x + w, y + h], fill=(196, 120, 60))
     d.line([x, y + h * 0.72, x + w, y + h * 0.72], fill=(255, 255, 255),
            width=1)
-    # finish gantry, right: two posts + checkered top bar
-    gx = x + w * 0.80
-    d.rectangle([gx, y + h * 0.10, gx + 4, y + h * 0.96], fill=INK)
-    d.rectangle([x + w * 0.97, y + h * 0.10, x + w * 0.97 + 4,
+    # finish gantry, right: two posts + checkered top bar, lowered so
+    # its top bar (0.34h) stays clear of the stamp above it
+    gx = x + w * 0.82
+    d.rectangle([gx, y + h * 0.34, gx + 4, y + h * 0.96], fill=INK)
+    d.rectangle([x + w * 0.97, y + h * 0.34, x + w * 0.97 + 4,
                  y + h * 0.96], fill=INK)
     for i in range(8):
         sq = gx + 4 + i * (x + w * 0.97 - gx - 4) / 8
-        d.rectangle([sq, y + h * 0.10, sq + (x + w * 0.97 - gx - 4) / 8,
-                     y + h * 0.10 + 8],
+        d.rectangle([sq, y + h * 0.34, sq + (x + w * 0.97 - gx - 4) / 8,
+                     y + h * 0.34 + 7],
                     fill=INK if i % 2 == 0 else (255, 255, 255))
     # tape across the track at the gantry
     d.line([gx, y + h * 0.62, gx, y + h * 0.96], fill=(255, 255, 255),
            width=2)
-    # runner, mid-stride, leaning forward toward the gantry - drawn
-    # large: head, torso, shorts and thick limbs, not a stick figure
-    hx, hy = x + w * 0.36, y + h * 0.26   # head centre
+    # runner, SMALL and mid-stride, leaning toward the gantry. Head
+    # top 0.16h, shoes bottom ~0.90h: fully inside the illustration.
+    hx, hy = x + w * 0.30, y + h * 0.26   # head centre
     skin = (150, 90, 60)
-    d.ellipse([hx - 9, hy - 9, hx + 9, hy + 9], fill=skin, outline=INK)
+    hr = h * 0.10
+    d.ellipse([hx - hr, hy - hr, hx + hr, hy + hr], fill=skin, outline=INK)
     # torso (leaning) + shorts
-    d.polygon([(hx - 5, hy + 8), (hx + 10, hy + 5), (hx + 15, hy + 30),
-               (hx - 2, hy + 33)], fill=RED, outline=INK)
-    d.polygon([(hx - 2, hy + 30), (hx + 15, hy + 28), (hx + 16, hy + 40),
-               (hx - 1, hy + 42)], fill=NAVY, outline=INK)
+    d.polygon([(hx - h * 0.07, hy + h * 0.12), (hx + h * 0.14, hy + h * 0.10),
+               (hx + h * 0.20, hy + h * 0.38), (hx - h * 0.03, hy + h * 0.40)],
+              fill=RED, outline=INK)
+    d.polygon([(hx - h * 0.03, hy + h * 0.36), (hx + h * 0.20, hy + h * 0.34),
+               (hx + h * 0.21, hy + h * 0.46), (hx - h * 0.02, hy + h * 0.48)],
+              fill=NAVY, outline=INK)
     # arms: one pumping forward, one back
-    d.line([hx + 8, hy + 12, hx + 24, hy + 3], fill=skin, width=6)
-    d.line([hx + 24, hy + 3, hx + 31, hy + 15], fill=skin, width=6)
-    d.line([hx - 3, hy + 12, hx - 17, hy + 24], fill=skin, width=6)
-    d.line([hx - 17, hy + 24, hx - 7, hy + 33], fill=skin, width=6)
+    d.line([hx + h * 0.12, hy + h * 0.16, hx + h * 0.36, hy + h * 0.06],
+           fill=skin, width=4)
+    d.line([hx + h * 0.36, hy + h * 0.06, hx + h * 0.46, hy + h * 0.22],
+           fill=skin, width=4)
+    d.line([hx - h * 0.05, hy + h * 0.16, hx - h * 0.28, hy + h * 0.34],
+           fill=skin, width=4)
+    d.line([hx - h * 0.28, hy + h * 0.34, hx - h * 0.12, hy + h * 0.48],
+           fill=skin, width=4)
     # legs: front leg bent forward, back leg trailing
-    d.line([hx + 5, hy + 40, hx + 22, hy + 54], fill=skin, width=6)
-    d.line([hx + 22, hy + 54, hx + 19, hy + 68], fill=skin, width=6)
-    d.line([hx + 10, hy + 40, hx - 7, hy + 52], fill=skin, width=6)
-    d.line([hx - 7, hy + 52, hx - 19, hy + 61], fill=skin, width=6)
+    d.line([hx + h * 0.08, hy + h * 0.46, hx + h * 0.32, hy + h * 0.42],
+           fill=skin, width=4)
+    d.line([hx + h * 0.32, hy + h * 0.42, hx + h * 0.30, hy + h * 0.60],
+           fill=skin, width=4)
+    d.line([hx + h * 0.15, hy + h * 0.46, hx - h * 0.10, hy + h * 0.40],
+           fill=skin, width=4)
+    d.line([hx - h * 0.10, hy + h * 0.40, hx - h * 0.28, hy + h * 0.56],
+           fill=skin, width=4)
     # shoes
-    d.ellipse([hx + 14, hy + 66, hx + 26, hy + 73], fill=(255, 255, 255),
-              outline=INK)
-    d.ellipse([hx - 24, hy + 59, hx - 12, hy + 66], fill=(255, 255, 255),
-              outline=INK)
-    # BANNED 3 YEARS stamp, top left
-    sf = sans_b(10)
+    d.ellipse([hx + h * 0.22, hy + h * 0.58, hx + h * 0.38, hy + h * 0.65],
+              fill=(255, 255, 255), outline=INK)
+    d.ellipse([hx - h * 0.36, hy + h * 0.54, hx - h * 0.20, hy + h * 0.61],
+              fill=(255, 255, 255), outline=INK)
+    # BANNED 3 YEARS stamp, TOP-RIGHT corner, above the gantry bar
+    sf = sans_b(8)
     st = "BANNED 3 YEARS"
     tw = d.textlength(st, font=sf)
-    d.rectangle([x + 4, y + 4, x + 4 + tw + 8, y + 20], fill=RED)
-    d.text((x + 8, y + 6), st, font=sf, fill=(255, 255, 255))
+    d.rectangle([x + w - tw - 12, y + 3, x + w - 4, y + 16], fill=RED)
+    d.text((x + w - tw - 8, y + 5), st, font=sf, fill=(255, 255, 255))
 
 
 def ill_canberra(d, x, y, w, h):
@@ -940,29 +1025,29 @@ CARDS = [
 
 # (num, place, one line, source or "")
 BRIEFS = [
-    (14, "SHENZHEN", "Xi urges ban on all nuclear arms.", "Al Jazeera"),
+    (14, "SHENZHEN", "Xi urges nuclear-arms ban.", "Al Jazeera"),
     (15, "SHENZHEN",
-     "Albanese to Putin: \u201cEnd your war, end it now\u201d, at APEC.", "ABC"),
-    (16, "SEOUL", "Half a million sit college entrance exam.", "Sedaily"),
-    (17, "JAKARTA", "Asset-seizure law passes after 18 years.", "Kompas"),
+     "Albanese to Putin: \u201cEnd your war, end it now\u201d.", "ABC"),
+    (16, "SEOUL", "500,000 sit college exam.", "Sedaily"),
+    (17, "JAKARTA", "Asset-seizure law passes at last.", "Kompas"),
     (18, "HORMUZ", "Iran says mines set 3 tankers ablaze.", "Al Jazeera"),
     (19, "GAZA", "Israel ends tank raid past truce line.", "BBC"),
     (20, "KRASNODAR", "Kyiv says it hit two oil refineries.", "Euronews"),
     (21, "BRUSSELS", "EU delays methane rules two years.", "Euronews"),
-    (22, "UK", "Inquiry: yacht Bayesian was vulnerable to wind.", "RNZ"),
+    (22, "UK", "Inquiry: Bayesian yacht vulnerable to wind.", "RNZ"),
     (23, "ZURICH", "Two rivals to challenge FIFA\u2019s Infantino.", "ABC"),
     (24, "ROME", "Author Corrado Augias dies at 91.", "Euronews"),
     (25, "MOGADISHU", "Somalia expels UAE ambassador.", "Al Jazeera"),
     (26, "SUDAN", "Court sentences absent RSF chief to death.", "AP"),
     (27, "PRETORIA", "Central bank holds rate at 7.25%.", "SABC"),
     (28, "CANARIES", "Record 11,000 migrants in 15 days.", "Africanews"),
-    (29, "FLORIDA", "Floods shut Broward, Miami schools again.", "CBS"),
+    (29, "FLORIDA", "Floods shut Broward, Miami schools.", "CBS"),
     (30, "WELLINGTON", "Court: pay equity cuts broke rights law.", "RNZ"),
     (31, "TONGA", "Drought emergency takes effect.", "RNZ"),
     (32, "COOK ISLANDS", "Cyclone Xavier now category 4.", "RNZ"),
-    (33, "SPACE", "Red giant seen eating a Sun-sized star.", "Nature"),
+    (33, "SPACE", "Red giant seen eating Sun-sized star.", "Nature"),
     (34, "SENEGAL", "Boat capsizes off Yenne; dozens missing.", ""),
-    (35, "CEPU", "Refinery blast kills one worker.", ""),
+    (35, "CEPU, JAVA", "Refinery blast kills one worker.", ""),
 ]
 
 # Map pins for stories 1-13: (num, lon, lat). Briefs 14-35 are small dots,
@@ -1014,7 +1099,7 @@ X1 = 1010
 CW2 = X1 - X0
 
 Y_MASTHEAD = 0
-Y_CONT = 106
+Y_CONT = 108
 Y_NUM = 128
 Y_HERO = 164
 H_HERO = 264
@@ -1041,7 +1126,9 @@ def draw_masthead(d):
         f = serif_b(size)
     d.text((M, 24), DATE_TEXT, font=f, fill=INK)
     d.rectangle([M, 88, W - M, 90], fill=RED)
-    d.text((M, 94), SUBLINE, font=serif_i(13), fill=RED)
+    # strapline, smaller (11pt) and higher (y 91): its descenders end
+    # well above the continent strip, so nothing looks struck through
+    d.text((M, 91), SUBLINE, font=serif_i(11), fill=RED)
 
 
 def draw_continents(d):
@@ -1163,12 +1250,13 @@ def draw_map_briefs(d):
         cx = bx0 + ci * (col_w + 12)
         for ri, (num, place, text, src) in enumerate(
                 BRIEFS[ci * 11:(ci + 1) * 11]):
-            y = Y_MAP + 14 + ri * 11.2
+            y = Y_MAP + 13 + ri * 11.7
             full = f"{num}. {place} \u2014 {text}"
             if src:
                 full += f" {src}"
-            f = sans(8)
-            fb = sans_b(8)
+            f = sans(9)
+            fb = sans_b(9)
+            fs = sans(8)
             d.text((cx, y), f"{num}. ", font=fb, fill=RED)
             x = cx + d.textlength(f"{num}. ", font=fb)
             d.text((x, y), place, font=fb, fill=INK)
@@ -1176,11 +1264,11 @@ def draw_map_briefs(d):
             d.text((x, y), "\u2014 " + text, font=f, fill=INK)
             x += d.textlength("\u2014 " + text, font=f)
             if src:
-                d.text((x + 2, y), src, font=f, fill=GREY)
+                d.text((x + 2, y), src, font=fs, fill=GREY)
             total = (d.textlength(f"{num}. ", font=fb)
                      + d.textlength(place + " ", font=fb)
                      + d.textlength("\u2014 " + text, font=f)
-                     + (d.textlength(src, font=f) + 2 if src else 0))
+                     + (d.textlength(src, font=fs) + 2 if src else 0))
             if total > col_w:
                 print(f"OVERFLOW brief {num}: {total:.0f}px > {col_w}px")
 
