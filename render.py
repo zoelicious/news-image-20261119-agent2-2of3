@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Render entry.png for news-image-20261119 - agent 2, 2/3 (noble-robin-77).
 
-Layout "THE DAY UNFOLDS, corrected": the red timeline rail down the left
-edge is kept, but the order is flipped - APEC opens the page at the TOP
-(FIRST WIRES) as three big scene panels, instead of being buried mid-page.
-Masthead (giant serif date) -> continent count strip -> "day in numbers"
-strip -> 3 hero scene panels -> 10 scene cards (2 rows x 5) -> small flat
-world map + numbered briefs -> DATE CHECK box -> footer.
+Layout "THE DAY UNFOLDS, corrected" (rebuild #2): the left timeline rail
+is GONE - the full width goes to the page. APEC opens at the TOP as three
+big scene panels. Masthead (giant serif date) -> continent count strip ->
+"day in numbers" strip -> 3 hero scene panels -> 10 scene cards (2 rows x
+5), each with a dark slug banner on top -> small flat world map + numbered
+briefs -> DATE CHECK box -> footer.
 35 stories, all happened / first reported on Thursday 19 November 2026.
 Every story carries a source and a verification tag (REPORTED / CONFIRMED /
 CLAIM / FORECAST). Flat vector, PIL only, fully deterministic.
@@ -460,7 +460,7 @@ def ill_bridge(d, x, y, w, h):
         d.line([x + px * w, y + h * 0.14, x + px * w, y + h * 0.52],
                fill=INK, width=2)
     # explosion: orange core, red starburst, grey smoke puffs
-    bx, by = x + w * 0.52, y + h * 0.38
+    bx, by = x + w * 0.52, y + h * 0.42
     burst = []
     for i in range(12):
         r = w * 0.13 if i % 2 == 0 else w * 0.06
@@ -664,10 +664,10 @@ def ill_anthropic(d, x, y, w, h):
                     outline=INK)
     d.rectangle([fx0, base - 3, fx1, base], fill=NAVY)
     # white exchange sign across the facade front with the ticker on it
-    d.rectangle([fx0 + 2, y + h * 0.46, fx1 - 2, y + h * 0.74], fill=CREAM,
+    d.rectangle([fx0 + 2, y + h * 0.44, fx1 - 2, y + h * 0.78], fill=CREAM,
                 outline=INK)
-    d.text((fx0 + w * 0.07, y + h * 0.48), "ANT", font=sans_b(13),
-           fill=NAVY)
+    d.text((fx0 + w * 0.07, y + h * 0.46), "ANT",
+           font=sans_b(13 if h >= 62 else 11), fill=NAVY)
     d.text((fx0 + w * 0.05, y + h * 0.66), "NASDAQ", font=sans_b(7),
            fill=NAVY)
     # rising chart, right two thirds (a small element, not the card)
@@ -874,6 +874,14 @@ ILL = {"apec": ill_apec, "icj": ill_icj, "cop": ill_cop,
        "anthropic": ill_anthropic, "gta": ill_gta, "bogota": ill_bogota,
        "nairobi": ill_nairobi, "canberra": ill_canberra}
 
+# Dark slug banner on top of every secondary card (rank-1 pattern): the
+# story's slug in white caps on a near-black strip, so each card is
+# recognisable at ~300px even before its headline is read.
+BANNERS = {4: "KERCH BRIDGE", 5: "OVER RIYADH", 6: "CYCLONE AKVAN",
+           7: "SEOUL", 8: "GREENLAND", 9: "ANT \u00b7 NASDAQ",
+           10: "GTA VI", 11: "PARO NACIONAL", 12: "DOPING \u00b7 3 YEARS",
+           13: "4.9% JOBLESS RATE"}
+
 # -------------------------------------------------------------------- stories
 # 35 stories = 3 hero + 10 cards + 22 briefs. Every featured story happened
 # or was first reported on Thursday 19 November 2026. Anything dated 18 or
@@ -887,7 +895,7 @@ HERO = [
     (2, "THE HAGUE · JUSTICE",
      "World Court: Myanmar committed genocide",
      "By 9 votes to 6 the court finds Myanmar guilty of genocide against "
-     "the Rohingya.",
+     "the Rohingya and orders reparations.",
      "Al Jazeera · UN News", "CONFIRMED", "icj"),
     (3, "ANTALYA · CLIMATE",
      "COP31 draft drops fossil fuels and $120bn aid goal",
@@ -933,7 +941,8 @@ CARDS = [
 # (num, place, one line, source or "")
 BRIEFS = [
     (14, "SHENZHEN", "Xi urges ban on all nuclear arms.", "Al Jazeera"),
-    (15, "SHENZHEN", "Putin: \u201cEnd your war\u201d, at APEC.", "ABC"),
+    (15, "SHENZHEN",
+     "Albanese to Putin: \u201cEnd your war, end it now\u201d, at APEC.", "ABC"),
     (16, "SEOUL", "Half a million sit college entrance exam.", "Sedaily"),
     (17, "JAKARTA", "Asset-seizure law passes after 18 years.", "Kompas"),
     (18, "HORMUZ", "Iran says mines set 3 tankers ablaze.", "Al Jazeera"),
@@ -1000,27 +1009,24 @@ DATE_TEXT = "Thursday 19 November 2026"
 SUBLINE = ("Trump, Xi and Putin share one table \u00b7 The World Court finds "
            "genocide in Myanmar \u00b7 COP31\u2019s draft drops fossil fuels")
 
-# Timeline rail: (label, band top y, band bottom y)
-X0 = 46                      # content left edge (right of the rail)
+X0 = M                       # content left edge: rail removed, full width
 X1 = 1010
 CW2 = X1 - X0
-SPINE_X = 36
-RAIL_LABEL_X = 10
 
 Y_MASTHEAD = 0
 Y_CONT = 106
 Y_NUM = 128
 Y_HERO = 164
-H_HERO = 250
-Y_C1 = 420
-Y_C2 = 566
-H_CARD = 140
-Y_MAP = 712
-H_MAP = 148
-Y_LEGEND = 864
-Y_DATE = 876
+H_HERO = 264
+Y_C1 = 434
+Y_C2 = 588
+H_CARD = 148
+Y_MAP = 740
+H_MAP = 138
+Y_LEGEND = 882
+Y_DATE = 894
 H_DATE = 76
-Y_FOOT = 972
+Y_FOOT = 980
 
 
 def draw_masthead(d):
@@ -1063,38 +1069,23 @@ def draw_numbers(d):
     d.line([X0, Y_NUM + 32, X1, Y_NUM + 32], fill=(170, 160, 140), width=1)
 
 
-def draw_rail(d, bands):
-    d.line([SPINE_X, bands[0][1], SPINE_X, bands[-1][2]], fill=RED, width=2)
-    for label, y0, y1 in bands:
-        cy = (y0 + y1) // 2
-        d.ellipse([SPINE_X - 5, cy - 5, SPINE_X + 5, cy + 5], fill=RED)
-        # stacked vertical label, centred on the band
-        f = sans_b(9)
-        total_h = len(label) * 11
-        yy = cy - total_h // 2
-        for ch in label:
-            cw = d.textlength(ch, font=f)
-            d.text((RAIL_LABEL_X + (12 - cw) / 2, yy), ch, font=f, fill=RED)
-            yy += 11
-
-
 def draw_hero(d):
     pw = (CW2 - 2 * 6) // 3
     for i, (num, kick, head, deck, src, tag, ill_key) in enumerate(HERO):
         x = X0 + i * (pw + 6)
         d.rectangle([x, Y_HERO, x + pw, Y_HERO + H_HERO], outline=INK, width=1)
-        ILL[ill_key](d, x + 1, Y_HERO + 1, pw - 2, 148)
-        ty = Y_HERO + 152
+        ILL[ill_key](d, x + 1, Y_HERO + 1, pw - 2, 164)
+        ty = Y_HERO + 168
         num_circle(d, x + 10, ty + 7, num, r=8)
         tracked(d, (x + 24, ty), kick, sans_b(9), RED, track=1)
-        hf = serif_b(15)
+        hf = serif_b(16)
         hlines = wrap(d, head, hf, pw - 12)
         if len(hlines) > 2:
             print(f"OVERFLOW hero headline {num}: {hlines}")
         hy = ty + 18
         for ln in hlines[:2]:
             d.text((x + 6, hy), ln, font=hf, fill=INK)
-            hy += 17
+            hy += 18
         df = sans(9)
         dlines = wrap(d, deck, df, pw - 12)
         if len(dlines) > 2:
@@ -1113,8 +1104,17 @@ def draw_cards(d, y0, cards):
     for i, (num, kick, head, deck, src, tag, ill_key) in enumerate(cards):
         x = X0 + i * (cw + 6)
         d.rectangle([x, y0, x + cw, y0 + H_CARD], outline=INK, width=1)
-        ILL[ill_key](d, x + 1, y0 + 1, cw - 2, 64)
-        ty = y0 + 68
+        # dark slug banner on top (rank-1 pattern), white caps
+        bt = BANNERS[num]
+        bf = sans_b(10)
+        if tracked_w(d, bt, bf, track=1) > cw - 10:
+            bf = sans_b(9)
+        bw = tracked_w(d, bt, bf, track=1)
+        d.rectangle([x, y0, x + cw, y0 + 16], fill=INK)
+        tracked(d, (x + (cw - bw) / 2, y0 + 3), bt, bf, (255, 255, 255),
+                track=1)
+        ILL[ill_key](d, x + 1, y0 + 17, cw - 2, 58)
+        ty = y0 + 78
         num_circle(d, x + 9, ty + 6, num, r=7)
         tracked(d, (x + 20, ty), kick, sans_b(8), RED, track=1)
         hf = serif_b(11)
@@ -1141,7 +1141,7 @@ def draw_cards(d, y0, cards):
 def draw_map_briefs(d):
     # --- map (left, widened to 340 so pins stop crowding)
     tracked(d, (X0, Y_MAP), "WHERE IT HAPPENED", sans_b(10), INK, track=2)
-    mx, my, mw, mh = X0, Y_MAP + 16, 340, H_MAP - 16
+    mx, my, mw, mh = X0, Y_MAP + 16, 320, H_MAP - 16
     d.rectangle([mx, my, mx + mw, my + mh], fill=MAP_BG, outline=INK)
     for poly in POLYS:
         pts = [project(lon, lat, mx, my, mw, mh) for lon, lat in poly]
@@ -1152,15 +1152,7 @@ def draw_map_briefs(d):
     for num, lon, lat in PINS:
         px, py = project(lon, lat, mx, my, mw, mh)
         num_circle(d, px, py, num, r=6)
-    # space story 33: star, top-right of the map
-    sx, sy = mx + mw - 14, my + 14
-    star = []
-    for i in range(10):
-        r = 8 if i % 2 == 0 else 3.5
-        a = -math.pi / 2 + i * math.pi / 5
-        star.append((sx + r * math.cos(a), sy + r * math.sin(a)))
-    d.polygon(star, fill=RED)
-    d.text((sx - 62, sy - 5), "33 \u00b7 SPACE", font=sans_b(8), fill=RED)
+    # story 33 is in space: no star pin on the map, just the brief line
     # --- briefs (right, 2 columns x 11)
     bx0 = mx + mw + 12
     bw = X1 - bx0
@@ -1171,12 +1163,12 @@ def draw_map_briefs(d):
         cx = bx0 + ci * (col_w + 12)
         for ri, (num, place, text, src) in enumerate(
                 BRIEFS[ci * 11:(ci + 1) * 11]):
-            y = Y_MAP + 14 + ri * 12.2
+            y = Y_MAP + 14 + ri * 11.2
             full = f"{num}. {place} \u2014 {text}"
             if src:
                 full += f" {src}"
-            f = sans(9)
-            fb = sans_b(9)
+            f = sans(8)
+            fb = sans_b(8)
             d.text((cx, y), f"{num}. ", font=fb, fill=RED)
             x = cx + d.textlength(f"{num}. ", font=fb)
             d.text((x, y), place, font=fb, fill=INK)
@@ -1257,15 +1249,9 @@ def build(out_path):
             print(f"WARNING dot {num} NOT on land: lon={lon} lat={lat}")
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
-    bands = [("FIRST WIRES", Y_HERO, Y_HERO + H_HERO),
-             ("MORNING", Y_C1, Y_C1 + H_CARD),
-             ("MIDDAY", Y_C2, Y_C2 + H_CARD),
-             ("AFTERNOON", Y_MAP, Y_MAP + H_MAP),
-             ("EVENING", Y_DATE, Y_DATE + H_DATE)]
     draw_masthead(d)
     draw_continents(d)
     draw_numbers(d)
-    draw_rail(d, bands)
     draw_hero(d)
     draw_cards(d, Y_C1, CARDS[:5])
     draw_cards(d, Y_C2, CARDS[5:])
