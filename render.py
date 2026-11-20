@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render entry.png for news-image-20261119 - agent 2, 2/3 (noble-robin-77).
 
-Layout "THE DAY UNFOLDS, corrected" (rebuild #3): the left timeline rail
+Layout "THE DAY UNFOLDS, corrected" (rebuild #4): the left timeline rail
 is GONE - the full width goes to the page. APEC opens at the TOP as three
 big scene panels. Masthead (giant serif date) -> continent count strip ->
 "day in numbers" strip -> 3 hero scene panels -> 10 scene cards (2 rows x
@@ -28,7 +28,7 @@ GOLD = (201, 162, 39)
 GREY = (85, 85, 85)
 TEAL = (31, 92, 77)
 MAP_BG = (232, 240, 234)
-MAP_LAND = (214, 205, 170)
+MAP_LAND = (188, 166, 102)
 SKY = (216, 230, 238)
 CREAM = (250, 246, 230)
 TINTS = [(220, 232, 238), (221, 235, 224), (228, 222, 239),
@@ -220,6 +220,18 @@ def project(lon, lat, mx, my, mw, mh):
 # Faces are simple flat-vector faces (skin circle, hair, eyes, smile) so the
 # three leaders are recognisable people, not blank dots.
 
+def _blob(d, cx, cy, rx, ry, fill, seed=0.0, n=28, wob=0.10):
+    """A smooth organic blob: an ellipse sampled as a many-point polygon
+    with a gentle sinusoidal wobble, so its edge reads as a curve, not
+    as the jagged straight edges of a few-point polygon."""
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        w = 1 + wob * math.sin(a * 3 + seed)
+        pts.append((cx + rx * w * math.cos(a), cy + ry * w * math.sin(a)))
+    d.polygon(pts, fill=fill)
+
+
 def _face(d, cx, cy, r, skin, hair, hair_style):
     # ears, so the head reads as a person, not a floating blob
     d.ellipse([cx - r - 3, cy - r * 0.1, cx - r + 3, cy + r * 0.25],
@@ -246,11 +258,25 @@ def _face(d, cx, cy, r, skin, hair, hair_style):
         for sx in (-0.7, 0.7):
             d.line([cx + sx * r, cy - r * 0.55, cx + sx * r, cy - r * 0.1],
                    fill=(150, 150, 150), width=2)
-    # eyebrows
-    d.line([cx - r * 0.55, cy - r * 0.28, cx - r * 0.20, cy - r * 0.34],
-           fill=INK, width=2)
-    d.line([cx + r * 0.20, cy - r * 0.34, cx + r * 0.55, cy - r * 0.28],
-           fill=INK, width=2)
+    # eyebrows: distinct per leader, so the three heads do not read alike
+    if hair_style == "blond-side":  # Trump: raised, arched brows
+        d.arc([cx - r * 0.62, cy - r * 0.55, cx - r * 0.10, cy - r * 0.05],
+              180, 360, fill=INK, width=2)
+        d.arc([cx + r * 0.10, cy - r * 0.55, cx + r * 0.62, cy - r * 0.05],
+              180, 360, fill=INK, width=2)
+    elif hair_style == "black-neat":  # Xi: straight, thick, dark brows
+        d.line([cx - r * 0.58, cy - r * 0.33, cx - r * 0.18, cy - r * 0.33],
+               fill=INK, width=3)
+        d.line([cx + r * 0.18, cy - r * 0.33, cx + r * 0.58, cy - r * 0.33],
+               fill=INK, width=3)
+    else:  # Putin: thinner brows, angled slightly down toward the nose
+        d.line([cx - r * 0.58, cy - r * 0.38, cx - r * 0.18, cy - r * 0.26],
+               fill=INK, width=2)
+        d.line([cx + r * 0.18, cy - r * 0.26, cx + r * 0.58, cy - r * 0.38],
+               fill=INK, width=2)
+        # one forehead line (his forehead is bare, unlike the other two)
+        d.line([cx - r * 0.35, cy - r * 0.68, cx + r * 0.35, cy - r * 0.68],
+               fill=(130, 110, 90), width=1)
     # eyes: white with a dark pupil, so the gaze reads
     for ex in (-0.38, 0.38):
         d.ellipse([cx + ex * r - r * 0.14, cy - r * 0.12,
@@ -258,11 +284,33 @@ def _face(d, cx, cy, r, skin, hair, hair_style):
                   fill=(255, 255, 255), outline=INK)
         d.ellipse([cx + ex * r - r * 0.06, cy - r * 0.06,
                    cx + ex * r + r * 0.06, cy + r * 0.06], fill=INK)
-    # nose + smile
+    # nose + cheek shading (a darker skin-tone crescent on the right
+    # cheek gives the flat face some depth) + smile lines + jaw
     d.line([cx, cy + r * 0.05, cx - r * 0.08, cy + r * 0.28], fill=INK,
            width=2)
-    d.arc([cx - r * 0.35, cy + r * 0.25, cx + r * 0.35, cy + r * 0.75],
-          15, 165, fill=INK, width=2)
+    shade = tuple(max(0, c - 30) for c in skin)
+    d.arc([cx + r * 0.20, cy - r * 0.70, cx + r * 0.95, cy + r * 0.70],
+          -55, 55, fill=shade, width=3)
+    d.arc([cx - r * 0.48, cy + r * 0.08, cx - r * 0.04, cy + r * 0.55],
+          90, 180, fill=INK, width=1)
+    d.arc([cx + r * 0.04, cy + r * 0.08, cx + r * 0.48, cy + r * 0.55],
+          0, 90, fill=INK, width=1)
+    d.arc([cx - r * 0.45, cy + r * 0.35, cx + r * 0.45, cy + r * 0.95],
+          20, 160, fill=INK, width=1)
+    # mouth: distinct per leader (wide grin / small smile / flat line)
+    if hair_style == "blond-side":
+        d.arc([cx - r * 0.40, cy + r * 0.22, cx + r * 0.40, cy + r * 0.78],
+              10, 170, fill=INK, width=2)
+    elif hair_style == "black-neat":
+        d.arc([cx - r * 0.30, cy + r * 0.30, cx + r * 0.30, cy + r * 0.72],
+              20, 160, fill=INK, width=2)
+    else:
+        d.line([cx - r * 0.28, cy + r * 0.48, cx + r * 0.28, cy + r * 0.48],
+               fill=INK, width=2)
+        d.line([cx - r * 0.28, cy + r * 0.48, cx - r * 0.34, cy + r * 0.42],
+               fill=INK, width=2)
+        d.line([cx + r * 0.28, cy + r * 0.48, cx + r * 0.34, cy + r * 0.42],
+               fill=INK, width=2)
 
 
 def ill_apec(d, x, y, w, h):
@@ -289,9 +337,9 @@ def ill_apec(d, x, y, w, h):
                      y + h * 0.68], fill=NAVY)
     d.rectangle([x, y + h * 0.68, x + w, y + h], fill=(233, 224, 196))
     leaders = [
-        (0.18, (244, 200, 160), "blond-side", NAVY, RED, "TRUMP", "us"),
-        (0.50, (240, 200, 160), "black-neat", INK, RED, "XI", "cn"),
-        (0.82, (238, 205, 175), "grey", NAVY, (200, 60, 40), "PUTIN", "ru"),
+        (0.18, (246, 192, 138), "blond-side", NAVY, RED, "TRUMP", "us"),
+        (0.50, (243, 210, 182), "black-neat", INK, RED, "XI", "cn"),
+        (0.82, (240, 204, 186), "grey", NAVY, (200, 60, 40), "PUTIN", "ru"),
     ]
     for fx, skin, hair, suit, tie, name, flag in leaders:
         cx = x + fx * w
@@ -409,19 +457,15 @@ def ill_cop(d, x, y, w, h):
     bottom carrying the aid figure.
     """
     d.rectangle([x, y, x + w, y + h], fill=(200, 225, 210))
-    # globe, left - big, smooth: solid blue disc, two solid green land
-    # masses drawn as polygons (no dither, no speckled texture)
+    # globe, left - big, smooth: solid blue disc, two smooth green land
+    # blobs (many-point curves, no jagged polygon edges, no dither)
     cx, cy, r = x + w * 0.24, y + h * 0.36, w * 0.155
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(90, 160, 200),
               outline=INK, width=2)
-    d.polygon([(cx - r * 0.75, cy - r * 0.45), (cx - r * 0.25, cy - r * 0.70),
-               (cx + r * 0.20, cy - r * 0.55), (cx + r * 0.05, cy - r * 0.05),
-               (cx - r * 0.35, cy + r * 0.05), (cx - r * 0.80, cy - r * 0.10)],
-              fill=(60, 140, 90))
-    d.polygon([(cx - r * 0.10, cy + r * 0.20), (cx + r * 0.45, cy + r * 0.10),
-               (cx + r * 0.70, cy + r * 0.45), (cx + r * 0.30, cy + r * 0.75),
-               (cx - r * 0.20, cy + r * 0.60)],
-              fill=(60, 140, 90))
+    _blob(d, cx - r * 0.30, cy - r * 0.28, r * 0.38, r * 0.28,
+          (60, 140, 90), seed=0.7)
+    _blob(d, cx + r * 0.25, cy + r * 0.30, r * 0.35, r * 0.30,
+          (60, 140, 90), seed=2.1)
     d.arc([cx - r * 0.8, cy - r * 0.8, cx + r * 0.8, cy + r * 0.8], 200, 340,
           fill=(255, 255, 255), width=3)
     # thermometer, middle - tall, red mercury near the top
@@ -740,17 +784,14 @@ def ill_anthropic(d, x, y, w, h):
 
 
 def ill_gta(d, x, y, w, h):
-    """GTA VI: a purple dusk city skyline, a sunset, a BIG white game
-    controller front and centre (so the card reads as a video game at
-    a glance), a big VI logo top-right with OUT NOW under it, and a
-    small red car on the street below. No STRIKE label anywhere."""
+    """GTA VI: a purple dusk city, a BIG white game controller front and
+    centre (so the card reads as a video game at a glance), a big VI
+    logo top-right with OUT NOW under it. Deliberately sparse: no car,
+    no sunset, only two skyline silhouettes, so nothing crowds the
+    controller. No STRIKE label anywhere."""
     d.rectangle([x, y, x + w, y + h], fill=(196, 150, 216))
-    # sunset, top-left corner - clear of the VI logo on the right
-    d.ellipse([x + w * 0.04, y + h * 0.04, x + w * 0.04 + 20,
-               y + h * 0.04 + 20], fill=(250, 200, 90), outline=INK)
-    # skyline silhouettes on both sides
-    for bx, bw, bh in [(0.02, 0.10, 0.34), (0.14, 0.09, 0.50),
-                       (0.80, 0.09, 0.46), (0.90, 0.09, 0.32)]:
+    # two skyline silhouettes, far left and far right only
+    for bx, bw, bh in [(0.02, 0.10, 0.34), (0.90, 0.09, 0.32)]:
         d.rectangle([x + bx * w, y + h * 0.78 - bh * h, x + (bx + bw) * w,
                      y + h * 0.78], fill=NAVY)
         for wy in (0.78 - bh * h + 0.06, 0.78 - bh * h + 0.14):
@@ -783,17 +824,6 @@ def ill_gta(d, x, y, w, h):
     for sx in (gx0 + w * 0.24, gx1 - w * 0.24):
         d.ellipse([sx - 5, (gy0 + gy1) / 2 + 2, sx + 5,
                    (gy0 + gy1) / 2 + 12], fill=(200, 200, 200), outline=INK)
-    # small red car, side view, bottom-left on the street - kept clear
-    # of the controller's left grip (car ends at 0.17w, grip starts 0.20w)
-    cx0, cy = x + w * 0.02, y + h * 0.72
-    d.rounded_rectangle([cx0, cy - 6, cx0 + w * 0.15, cy + 4], radius=4,
-                        fill=RED, outline=INK)
-    d.polygon([(cx0 + w * 0.03, cy - 6), (cx0 + w * 0.05, cy - 12),
-               (cx0 + w * 0.10, cy - 12), (cx0 + w * 0.12, cy - 6)],
-              fill=RED, outline=INK)
-    for wx in (0.03, 0.115):
-        d.ellipse([cx0 + wx * w - 4, cy + 1, cx0 + wx * w + 4, cy + 9],
-                  fill=INK, outline=(255, 255, 255))
     # big VI logo, top right, with OUT NOW below it - clear of the
     # controller (controller top is 0.26h, VI ends well above it)
     d.text((x + w * 0.78, y + h * 0.01), "VI", font=serif_b(30),
@@ -974,8 +1004,8 @@ BANNERS = {4: "KERCH BRIDGE", 5: "OVER RIYADH", 6: "CYCLONE AKVAN",
 HERO = [
     (1, "APEC 2026 · SHENZHEN",
      "Trump, Xi and Putin hold first three-way summit",
-     "The US, Chinese and Russian leaders meet for ~90 minutes and issue "
-     "a \u201cDeclaration on Peace\u201d on nuclear risk.",
+     "Three leaders meet for ~90 minutes, issue a \u201cDeclaration on "
+     "Peace\u201d on nuclear risk and back UN reform.",
      "Reuters · AP · Xinhua", "CONFIRMED", "apec"),
     (2, "THE HAGUE · JUSTICE",
      "World Court: Myanmar committed genocide",
@@ -1232,7 +1262,7 @@ def draw_map_briefs(d):
     d.rectangle([mx, my, mx + mw, my + mh], fill=MAP_BG, outline=INK)
     for poly in POLYS:
         pts = [project(lon, lat, mx, my, mw, mh) for lon, lat in poly]
-        d.polygon(pts, fill=MAP_LAND, outline=(120, 110, 80))
+        d.polygon(pts, fill=MAP_LAND, outline=(96, 84, 52), width=2)
     for _num, lon, lat in DOTS:
         px, py = project(lon, lat, mx, my, mw, mh)
         d.ellipse([px - 2, py - 2, px + 2, py + 2], fill=RED)
