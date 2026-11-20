@@ -242,316 +242,630 @@ def _face(d, cx, cy, r, skin, hair, hair_style):
 
 
 def ill_apec(d, x, y, w, h):
-    """Hero 1: three faced leaders at a summit table, flags + nameplates."""
+    """Hero 1: three faced leaders at a summit table, flags + nameplates.
+
+    Fills the whole panel: red banner on top, real flags behind each
+    leader, big faces, suits, a full-width table with nameplates on it.
+    """
     d.rectangle([x, y, x + w, y + h], fill=SKY)
-    # skyline
-    for bx, bw, bh in [(0.02, 0.07, 0.30), (0.11, 0.06, 0.44),
-                       (0.19, 0.08, 0.26), (0.29, 0.06, 0.36),
-                       (0.37, 0.07, 0.22), (0.46, 0.06, 0.34),
-                       (0.54, 0.08, 0.24), (0.64, 0.06, 0.38),
-                       (0.72, 0.08, 0.28), (0.82, 0.07, 0.32),
-                       (0.91, 0.06, 0.24)]:
-        d.rectangle([x + bx * w, y + h * 0.62 - bh * h, x + (bx + bw) * w,
-                     y + h * 0.62], fill=NAVY)
-    d.rectangle([x, y + h * 0.62, x + w, y + h], fill=(233, 224, 196))
-    leaders = [
-        (0.20, (244, 200, 160), "blond-side", NAVY, RED, "TRUMP"),
-        (0.50, (240, 200, 160), "black-neat", INK, RED, "XI"),
-        (0.80, (238, 205, 175), "grey", NAVY, (200, 60, 40), "PUTIN"),
-    ]
-    for fx, skin, hair, suit, tie, _name in leaders:
-        cx = x + fx * w
-        # flag pole behind
-        d.line([cx, y + h * 0.04, cx, y + h * 0.30], fill=INK, width=2)
-        d.rectangle([cx, y + h * 0.04, cx + w * 0.07, y + h * 0.11],
-                    fill=tie, outline=INK)
-        _face(d, cx, y + h * 0.30, w * 0.075, skin, hair, hair)
-        # suit + tie
-        d.polygon([(cx - w * 0.11, y + h * 0.62), (cx - w * 0.06, y + h * 0.42),
-                   (cx + w * 0.06, y + h * 0.42), (cx + w * 0.11, y + h * 0.62)],
-                  fill=suit, outline=INK)
-        d.polygon([(cx - w * 0.014, y + h * 0.44), (cx + w * 0.014, y + h * 0.44),
-                   (cx + w * 0.02, y + h * 0.60), (cx - w * 0.02, y + h * 0.60)],
-                  fill=tie)
-    # table + nameplates + banner (stacked, no overlap)
-    d.rectangle([x + w * 0.04, y + h * 0.58, x + w * 0.96, y + h * 0.66],
-                fill=(196, 120, 60), outline=INK)
-    for fx, _s, _h, _su, _t, name in leaders:
-        cx = x + fx * w
-        f = sans_b(10)
-        tw = d.textlength(name, font=f)
-        d.rectangle([cx - tw / 2 - 6, y + h * 0.68, cx + tw / 2 + 6,
-                     y + h * 0.84], fill=CREAM, outline=INK)
-        d.text((cx - tw / 2, y + h * 0.70), name, font=f, fill=INK)
-    # banner
+    # red banner strip on top
     bf = sans_b(11)
     bt = "FIRST US-CHINA-RUSSIA SUMMIT"
     tw = d.textlength(bt, font=bf)
-    d.rectangle([x + w / 2 - tw / 2 - 8, y + h * 0.87,
-                 x + w / 2 + tw / 2 + 8, y + h * 0.99],
-                fill=RED)
-    d.text((x + w / 2 - tw / 2, y + h * 0.89), bt, font=bf,
-           fill=(255, 255, 255))
+    d.rectangle([x, y, x + w, y + 20], fill=RED)
+    d.text((x + (w - tw) / 2, y + 4), bt, font=bf, fill=(255, 255, 255))
+    # skyline behind the leaders
+    for bx, bw, bh in [(0.02, 0.06, 0.22), (0.10, 0.05, 0.30),
+                       (0.17, 0.06, 0.18), (0.27, 0.05, 0.26),
+                       (0.34, 0.06, 0.16), (0.42, 0.05, 0.24),
+                       (0.58, 0.06, 0.18), (0.66, 0.05, 0.28),
+                       (0.74, 0.06, 0.16), (0.83, 0.05, 0.24),
+                       (0.90, 0.06, 0.18)]:
+        d.rectangle([x + bx * w, y + h * 0.68 - bh * h, x + (bx + bw) * w,
+                     y + h * 0.68], fill=NAVY)
+    d.rectangle([x, y + h * 0.68, x + w, y + h], fill=(233, 224, 196))
+    leaders = [
+        (0.18, (244, 200, 160), "blond-side", NAVY, RED, "TRUMP", "us"),
+        (0.50, (240, 200, 160), "black-neat", INK, RED, "XI", "cn"),
+        (0.82, (238, 205, 175), "grey", NAVY, (200, 60, 40), "PUTIN", "ru"),
+    ]
+    for fx, skin, hair, suit, tie, name, flag in leaders:
+        cx = x + fx * w
+        # flag on a pole behind the leader
+        px = cx - w * 0.115
+        d.line([px, y + 24, px, y + h * 0.34], fill=INK, width=2)
+        fw, fh = w * 0.075, 16
+        if flag == "us":  # stars and stripes, simplified
+            d.rectangle([px, y + 24, px + fw, y + 24 + fh], fill=(255, 255, 255),
+                        outline=INK)
+            for s in range(4):
+                d.rectangle([px, y + 24 + s * 4, px + fw, y + 24 + s * 4 + 2],
+                            fill=RED)
+            d.rectangle([px, y + 24, px + fw * 0.45, y + 24 + 9], fill=NAVY)
+            d.ellipse([px + 3, y + 26, px + 7, y + 30], fill=(255, 255, 255))
+            d.ellipse([px + 9, y + 29, px + 13, y + 33], fill=(255, 255, 255))
+        elif flag == "cn":  # red field, gold stars
+            d.rectangle([px, y + 24, px + fw, y + 24 + fh], fill=RED,
+                        outline=INK)
+            d.ellipse([px + 2, y + 26, px + 7, y + 31], fill=GOLD)
+            d.ellipse([px + 10, y + 26, px + 13, y + 29], fill=GOLD)
+            d.ellipse([px + 13, y + 30, px + 16, y + 33], fill=GOLD)
+        else:  # Russia: white / blue / red tricolour
+            d.rectangle([px, y + 24, px + fw, y + 24 + fh], fill=(255, 255, 255),
+                        outline=INK)
+            d.rectangle([px, y + 24 + 5, px + fw, y + 24 + 11], fill=NAVY)
+            d.rectangle([px, y + 24 + 11, px + fw, y + 24 + fh], fill=RED)
+        _face(d, cx, y + h * 0.44, w * 0.082, skin, hair, hair)
+        # suit + tie
+        d.polygon([(cx - w * 0.11, y + h * 0.68), (cx - w * 0.065, y + h * 0.55),
+                   (cx + w * 0.065, y + h * 0.55), (cx + w * 0.11, y + h * 0.68)],
+                  fill=suit, outline=INK)
+        d.polygon([(cx - w * 0.014, y + h * 0.57), (cx + w * 0.014, y + h * 0.57),
+                   (cx + w * 0.02, y + h * 0.68), (cx - w * 0.02, y + h * 0.68)],
+                  fill=tie)
+    # full-width table + nameplates sitting on its front
+    d.rectangle([x + w * 0.02, y + h * 0.68, x + w * 0.98, y + h * 0.80],
+                fill=(196, 120, 60), outline=INK)
+    for fx, _s, _h, _su, _t, name, _f in leaders:
+        cx = x + fx * w
+        f = sans_b(11)
+        tw = d.textlength(name, font=f)
+        d.rectangle([cx - tw / 2 - 7, y + h * 0.82, cx + tw / 2 + 7,
+                     y + h * 0.98], fill=CREAM, outline=INK)
+        d.text((cx - tw / 2, y + h * 0.845), name, font=f, fill=INK)
 
 
 def ill_icj(d, x, y, w, h):
-    """Hero 2: World Court building + scales + big 9-6 badge."""
+    """Hero 2: World Court building + scales + big 9-6 badge.
+
+    Fills the panel: a wide red-brick Peace-Palace-style building with
+    two towers and arched windows on the left, tall scales on the right,
+    a big red 9-6 badge on top and GENOCIDE RULING under it.
+    """
     d.rectangle([x, y, x + w, y + h], fill=SKY)
-    d.rectangle([x, y + h * 0.84, x + w, y + h], fill=(233, 224, 196))
-    cx, base = x + w * 0.38, y + h * 0.84
-    d.polygon([(cx - w * 0.30, y + h * 0.24), (cx + w * 0.30, y + h * 0.24),
-               (cx, y + h * 0.05)], fill=NAVY)
-    d.rectangle([cx - w * 0.30, y + h * 0.24, cx + w * 0.30, y + h * 0.28],
-                fill=CREAM, outline=INK)
+    d.rectangle([x, y + h * 0.86, x + w, y + h], fill=(233, 224, 196))
+    # --- brick building, left ~62% of the panel
+    bx0, bx1 = x + w * 0.03, x + w * 0.62
+    base = y + h * 0.86
+    d.rectangle([bx0, y + h * 0.34, bx1, base], fill=(178, 84, 60),
+                outline=INK)
+    # two towers with pointed roofs
+    for tx0 in (bx0 + 2, bx1 - w * 0.13):
+        d.rectangle([tx0, y + h * 0.16, tx0 + w * 0.13, base],
+                    fill=(178, 84, 60), outline=INK)
+        d.polygon([(tx0 - 3, y + h * 0.16), (tx0 + w * 0.065, y + h * 0.03),
+                   (tx0 + w * 0.13 + 3, y + h * 0.16)], fill=NAVY,
+                  outline=INK)
+        d.rectangle([tx0 + w * 0.045, y + h * 0.30, tx0 + w * 0.085,
+                     y + h * 0.44], fill=CREAM, outline=INK)
+    # main roof + arched windows + door
+    d.polygon([(bx0 - 2, y + h * 0.34), (x + w * 0.325, y + h * 0.20),
+               (bx1 + 2, y + h * 0.34)], fill=NAVY, outline=INK)
     for i in range(4):
-        px = cx - w * 0.26 + i * w * 0.15
-        d.rectangle([px, y + h * 0.28, px + w * 0.06, base],
+        wx = bx0 + w * 0.055 + i * w * 0.115
+        d.pieslice([wx, y + h * 0.46, wx + w * 0.055, y + h * 0.58], 180, 360,
+                   fill=CREAM, outline=INK)
+        d.rectangle([wx, y + h * 0.52, wx + w * 0.055, y + h * 0.66],
                     fill=CREAM, outline=INK)
-    d.rectangle([cx - w * 0.30, base - 4, cx + w * 0.30, base], fill=NAVY)
-    # scales, right
-    sx = x + w * 0.80
-    d.line([sx, y + h * 0.14, sx, y + h * 0.60], fill=INK, width=3)
-    d.line([sx - w * 0.11, y + h * 0.20, sx + w * 0.11, y + h * 0.20],
+    d.rectangle([x + w * 0.28, y + h * 0.66, x + w * 0.37, base],
+                fill=NAVY, outline=INK)
+    # --- scales, right
+    sx = x + w * 0.79
+    d.line([sx, y + h * 0.30, sx, y + h * 0.78], fill=INK, width=3)
+    d.line([sx - w * 0.10, y + h * 0.36, sx + w * 0.10, y + h * 0.36],
            fill=INK, width=3)
-    d.ellipse([sx - w * 0.14, y + h * 0.50, sx - w * 0.05, y + h * 0.62],
+    d.ellipse([sx - w * 0.13, y + h * 0.60, sx - w * 0.045, y + h * 0.74],
               fill=GOLD, outline=INK)
-    d.ellipse([sx + w * 0.05, y + h * 0.50, sx + w * 0.14, y + h * 0.62],
+    d.ellipse([sx + w * 0.045, y + h * 0.60, sx + w * 0.13, y + h * 0.74],
               fill=GOLD, outline=INK)
-    d.line([sx - w * 0.095, y + h * 0.20, sx - w * 0.095, y + h * 0.50],
+    d.line([sx - w * 0.087, y + h * 0.36, sx - w * 0.087, y + h * 0.60],
            fill=INK, width=2)
-    d.line([sx + w * 0.095, y + h * 0.20, sx + w * 0.095, y + h * 0.50],
+    d.line([sx + w * 0.087, y + h * 0.36, sx + w * 0.087, y + h * 0.60],
            fill=INK, width=2)
-    # 9-6 badge
-    bf = sans_b(16)
+    d.ellipse([sx - 4, y + h * 0.28, sx + 4, y + h * 0.28 + 8], fill=GOLD,
+              outline=INK)
+    # --- 9-6 badge, top right
+    bf = sans_b(20)
     bt = "9-6"
     tw = d.textlength(bt, font=bf)
-    d.rectangle([x + w * 0.60, y + h * 0.06, x + w * 0.60 + tw + 14,
-                 y + h * 0.06 + 26], fill=RED, outline=INK)
-    d.text((x + w * 0.60 + 7, y + h * 0.06 + 4), bt, font=bf,
-           fill=(255, 255, 255))
-    d.text((x + w * 0.60, y + h * 0.68), "GENOCIDE", font=sans_b(9),
-           fill=INK)
-    d.text((x + w * 0.60, y + h * 0.80), "RULING", font=sans_b(9),
-           fill=INK)
+    bxx = x + w * 0.66
+    d.rectangle([bxx, y + 6, bxx + tw + 16, y + 34], fill=RED, outline=INK)
+    d.text((bxx + 8, y + 8), bt, font=bf, fill=(255, 255, 255))
+    d.text((bxx, y + h * 0.80), "GENOCIDE", font=sans_b(10), fill=INK)
+    d.text((bxx, y + h * 0.80 + 13), "RULING", font=sans_b(10), fill=INK)
 
 
 def ill_cop(d, x, y, w, h):
-    """Hero 3: globe + thermometer + FOSSIL FUELS document struck through."""
+    """Hero 3: globe + thermometer + FOSSIL FUELS document struck through.
+
+    Fills the whole panel: a big globe on the left, a tall red
+    thermometer in the middle, the struck-through draft document on the
+    right, and a navy strip along the bottom carrying the aid figure.
+    """
     d.rectangle([x, y, x + w, y + h], fill=(200, 225, 210))
-    # globe (sized to the panel: radius from width, centred mid-panel)
-    cx, cy, r = x + w * 0.28, y + h * 0.38, w * 0.13
+    # globe, left - big, centred in the upper area
+    cx, cy, r = x + w * 0.24, y + h * 0.36, w * 0.155
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(90, 160, 200),
               outline=INK, width=2)
-    d.ellipse([cx - r * 0.55, cy - r * 0.5, cx + r * 0.1, cy + r * 0.1],
+    d.ellipse([cx - r * 0.6, cy - r * 0.55, cx + r * 0.15, cy + r * 0.05],
               fill=(60, 140, 90), outline=INK)
-    d.ellipse([cx - r * 0.1, cy + r * 0.2, cx + r * 0.6, cy + r * 0.7],
+    d.ellipse([cx - r * 0.15, cy + r * 0.15, cx + r * 0.65, cy + r * 0.7],
               fill=(60, 140, 90), outline=INK)
-    # thermometer
-    tx = x + w * 0.58
-    d.rounded_rectangle([tx, y + h * 0.12, tx + w * 0.06, y + h * 0.62],
+    d.arc([cx - r * 0.8, cy - r * 0.8, cx + r * 0.8, cy + r * 0.8], 200, 340,
+          fill=(255, 255, 255), width=2)
+    # heat waves above the globe
+    for i, wx in enumerate([0.10, 0.20, 0.30]):
+        d.arc([x + wx * w, y + 4, x + (wx + 0.06) * w, y + 18], 180, 360,
+              fill=RED, width=2)
+    # thermometer, middle - tall, red mercury near the top
+    tx = x + w * 0.47
+    d.rounded_rectangle([tx, y + h * 0.08, tx + w * 0.055, y + h * 0.62],
                         radius=6, fill=CREAM, outline=INK)
-    d.rectangle([tx + 2, y + h * 0.22, tx + w * 0.06 - 2, y + h * 0.60],
+    d.rectangle([tx + 2, y + h * 0.16, tx + w * 0.055 - 2, y + h * 0.60],
                 fill=RED)
-    d.ellipse([tx - w * 0.03, y + h * 0.58, tx + w * 0.09, y + h * 0.74],
+    d.ellipse([tx - w * 0.025, y + h * 0.58, tx + w * 0.08, y + h * 0.74],
               fill=RED, outline=INK)
-    # document
-    dx, dy, dw, dh = x + w * 0.68, y + h * 0.10, w * 0.28, h * 0.55
+    d.text((tx - w * 0.02, y + h * 0.76), "HOT", font=sans_b(9), fill=RED)
+    # document, right
+    dx, dy, dw, dh = x + w * 0.60, y + h * 0.06, w * 0.37, h * 0.60
     d.rectangle([dx, dy, dx + dw, dy + dh], fill=CREAM, outline=INK, width=2)
-    f = sans_b(9)
-    d.text((dx + 4, dy + 4), "DRAFT DEAL", font=f, fill=INK)
-    d.text((dx + 4, dy + 18), "FOSSIL", font=f, fill=INK)
-    d.text((dx + 4, dy + 30), "FUELS", font=f, fill=INK)
-    d.line([dx + 2, dy + 26, dx + dw - 2, dy + 22], fill=RED, width=4)
-    d.line([dx + 2, dy + 40, dx + dw - 2, dy + 36], fill=RED, width=4)
-    # CUT stamp
-    sf = sans_b(13)
+    f = sans_b(10)
+    d.text((dx + 5, dy + 5), "DRAFT DEAL", font=f, fill=INK)
+    d.line([dx + 5, dy + 20, dx + dw - 5, dy + 20], fill=INK, width=1)
+    d.text((dx + 5, dy + 26), "FOSSIL", font=sans_b(13), fill=INK)
+    d.text((dx + 5, dy + 44), "FUELS", font=sans_b(13), fill=INK)
+    d.line([dx + 3, dy + 34, dx + dw - 3, dy + 30], fill=RED, width=4)
+    d.line([dx + 3, dy + 54, dx + dw - 3, dy + 50], fill=RED, width=4)
+    d.text((dx + 5, dy + 62), "ADAPTATION AID:", font=sans(9), fill=GREY)
+    d.text((dx + 5, dy + 73), "$120bn", font=sans_b(10), fill=RED)
+    # CUT stamp overlapping the document's lower corner
+    sf = sans_b(14)
     st = "CUT"
     tw = d.textlength(st, font=sf)
-    d.rectangle([dx - 6, dy + dh - 6, dx - 6 + tw + 10, dy + dh + 14],
-                fill=RED, outline=INK)
-    d.text((dx - 1, dy + dh - 4), st, font=sf, fill=(255, 255, 255))
-    # aid line
-    d.text((x + w * 0.04, y + h * 0.80), "$120bn ADAPTATION AID",
-           font=sans_b(11), fill=NAVY)
+    d.rectangle([dx + dw - tw - 18, dy + dh - 4,
+                 dx + dw - 8, dy + dh + 18], fill=RED, outline=INK)
+    d.text((dx + dw - tw - 13, dy + dh - 2), st, font=sf,
+           fill=(255, 255, 255))
+    # navy strip along the bottom with the aid figure
+    d.rectangle([x, y + h * 0.82, x + w, y + h], fill=NAVY)
+    bf = sans_b(12)
+    bt = "$120bn ADAPTATION AID CUT"
+    tw = d.textlength(bt, font=bf)
+    d.text((x + (w - tw) / 2, y + h * 0.86), bt, font=bf,
+           fill=(255, 255, 255))
 
 
 def ill_bridge(d, x, y, w, h):
+    """Kerch bridge: deck + arch + pylons, a big explosion with smoke,
+    water below and a ship passing under."""
     d.rectangle([x, y, x + w, y + h], fill=SKY)
-    d.rectangle([x, y + h * 0.72, x + w, y + h], fill=(168, 205, 225))
-    d.line([x, y + h * 0.55, x + w, y + h * 0.55], fill=INK, width=3)
-    d.arc([x + w * 0.18, y + h * 0.30, x + w * 0.82, y + h * 0.80],
-          180, 360, fill=INK, width=2)
-    d.line([x + w * 0.30, y + h * 0.20, x + w * 0.30, y + h * 0.55],
-           fill=INK, width=2)
-    d.line([x + w * 0.70, y + h * 0.20, x + w * 0.70, y + h * 0.55],
-           fill=INK, width=2)
-    bx, by = x + w * 0.50, y + h * 0.42
+    # water
+    d.rectangle([x, y + h * 0.72, x + w, y + h], fill=(120, 180, 210))
+    d.line([x + w * 0.05, y + h * 0.80, x + w * 0.30, y + h * 0.80],
+           fill=(255, 255, 255), width=1)
+    d.line([x + w * 0.62, y + h * 0.88, x + w * 0.90, y + h * 0.88],
+           fill=(255, 255, 255), width=1)
+    # ship under the bridge, left
+    sx = x + w * 0.08
+    d.polygon([(sx, y + h * 0.82), (sx + w * 0.22, y + h * 0.82),
+               (sx + w * 0.19, y + h * 0.94), (sx + w * 0.03, y + h * 0.94)],
+              fill=NAVY, outline=INK)
+    d.rectangle([sx + w * 0.07, y + h * 0.72, sx + w * 0.13, y + h * 0.82],
+                fill=CREAM, outline=INK)
+    # bridge deck + arch + pylons
+    d.line([x, y + h * 0.52, x + w, y + h * 0.52], fill=INK, width=3)
+    d.arc([x + w * 0.14, y + h * 0.22, x + w * 0.86, y + h * 0.82],
+          180, 360, fill=INK, width=3)
+    for px in (0.30, 0.70):
+        d.line([x + px * w, y + h * 0.14, x + px * w, y + h * 0.52],
+               fill=INK, width=2)
+    # explosion: orange core, red starburst, grey smoke puffs
+    bx, by = x + w * 0.52, y + h * 0.38
     burst = []
-    for i in range(10):
-        r = w * 0.11 if i % 2 == 0 else w * 0.05
-        a = -math.pi / 2 + i * math.pi / 5
+    for i in range(12):
+        r = w * 0.13 if i % 2 == 0 else w * 0.06
+        a = -math.pi / 2 + i * math.pi / 6
         burst.append((bx + r * math.cos(a), by + r * math.sin(a)))
-    d.polygon(burst, fill=RED)
+    d.polygon(burst, fill=RED, outline=INK)
+    d.ellipse([bx - w * 0.05, by - w * 0.05, bx + w * 0.05, by + w * 0.05],
+              fill=(250, 180, 40))
+    for sx2, sy2, sr in [(0.40, 0.12, 7), (0.62, 0.08, 8), (0.68, 0.20, 6)]:
+        d.ellipse([x + sx2 * w - sr, y + sy2 * h - sr, x + sx2 * w + sr,
+                   y + sy2 * h + sr], fill=(120, 120, 120), outline=INK)
 
 
 def ill_riyadh(d, x, y, w, h):
-    d.rectangle([x, y, x + w, y + h], fill=(250, 220, 180))
-    for bx, bw, bh in [(0.04, 0.12, 0.45), (0.20, 0.10, 0.60),
-                       (0.34, 0.12, 0.38), (0.50, 0.10, 0.55),
-                       (0.64, 0.12, 0.42), (0.80, 0.12, 0.50)]:
-        d.rectangle([x + bx * w, y + h * 0.90 - bh * h, x + (bx + bw) * w,
-                     y + h * 0.90], fill=NAVY)
-    d.rectangle([x, y + h * 0.90, x + w, y + h], fill=(233, 224, 196))
-    # interceptor burst in the sky (kept inside the illustration box)
-    bx, by = x + w * 0.62, y + h * 0.34
+    """Riyadh at night: dark sky with stars, a tower skyline, two
+    missile trails curving up to a gold interception burst."""
+    d.rectangle([x, y, x + w, y + h], fill=(24, 32, 64))
+    # stars
+    for sx, sy in [(0.08, 0.12), (0.22, 0.06), (0.38, 0.16), (0.55, 0.08),
+                   (0.72, 0.14), (0.88, 0.06), (0.94, 0.22), (0.30, 0.24)]:
+        d.ellipse([x + sx * w - 1, y + sy * h - 1, x + sx * w + 1,
+                   y + sy * h + 1], fill=(255, 255, 255))
+    # crescent moon
+    d.ellipse([x + w * 0.06, y + h * 0.08, x + w * 0.06 + 12,
+               y + h * 0.08 + 12], fill=(250, 240, 200))
+    d.ellipse([x + w * 0.06 + 4, y + h * 0.08 - 2, x + w * 0.06 + 14,
+               y + h * 0.08 + 10], fill=(24, 32, 64))
+    # skyline: towers with lit windows, one tall tower with an arch top
+    for bx, bw, bh in [(0.02, 0.13, 0.34), (0.17, 0.11, 0.48),
+                       (0.30, 0.12, 0.30), (0.44, 0.11, 0.42),
+                       (0.68, 0.12, 0.36), (0.82, 0.13, 0.46)]:
+        d.rectangle([x + bx * w, y + h * 0.92 - bh * h, x + (bx + bw) * w,
+                     y + h * 0.92], fill=(10, 14, 34), outline=(90, 100, 140))
+        for wy in (0.92 - bh * h + 4, 0.92 - bh * h + 12):
+            d.rectangle([x + (bx + 0.03) * w, y + wy, x + (bx + 0.06) * w,
+                         y + wy + 3], fill=GOLD)
+    # tall Kingdom-Centre-style tower, centre-right, with arched opening
+    tx0, tx1 = x + w * 0.56, x + w * 0.66
+    d.rectangle([tx0, y + h * 0.22, tx1, y + h * 0.92], fill=(10, 14, 34),
+                outline=(90, 100, 140))
+    d.pieslice([tx0 + 2, y + h * 0.22, tx1 - 2, y + h * 0.44], 180, 360,
+               fill=(24, 32, 64))
+    d.rectangle([x, y + h * 0.92, x + w, y + h], fill=(233, 224, 196))
+    # missile trails: dotted arcs rising to the interception burst
+    bx, by = x + w * 0.60, y + h * 0.30
+    for t in [i / 12 for i in range(13)]:
+        px = x + w * 0.10 + (bx - x - w * 0.10) * t
+        py = y + h * 0.85 - (y + h * 0.85 - by) * t * t
+        d.ellipse([px - 1.5, py - 1.5, px + 1.5, py + 1.5],
+                  fill=(255, 255, 255))
+    for t in [i / 10 for i in range(11)]:
+        px = x + w * 0.95 - (x + w * 0.95 - bx) * t
+        py = y + h * 0.80 - (y + h * 0.80 - by) * t * t
+        d.ellipse([px - 1.5, py - 1.5, px + 1.5, py + 1.5], fill=GOLD)
     burst = []
-    for i in range(10):
-        r = w * 0.08 if i % 2 == 0 else w * 0.035
-        a = -math.pi / 2 + i * math.pi / 5
+    for i in range(12):
+        r = w * 0.10 if i % 2 == 0 else w * 0.045
+        a = -math.pi / 2 + i * math.pi / 6
         burst.append((bx + r * math.cos(a), by + r * math.sin(a)))
     d.polygon(burst, fill=GOLD, outline=INK)
-    d.line([x + w * 0.20, y + h * 0.30, bx - w * 0.08, by + h * 0.05],
-           fill=INK, width=2)
+    d.ellipse([bx - 4, by - 4, bx + 4, by + 4], fill=(255, 255, 255))
 
 
 def ill_cyclone(d, x, y, w, h):
+    """Cyclone Akvan: a big spiral over the sea, a coastline with houses
+    and a red arrow showing the storm moving toward land."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[0])
-    d.rectangle([x, y + h * 0.82, x + w, y + h], fill=(168, 205, 225))
-    # spiral radii are scaled to the ILLUSTRATION HEIGHT so the arcs never
-    # spill past the card into the headline below
-    cx, cy = x + w * 0.42, y + h * 0.50
-    for r in (0.12, 0.22, 0.32, 0.42):
+    # sea
+    d.rectangle([x, y + h * 0.62, x + w, y + h], fill=(120, 180, 210))
+    # coastline: sand strip with three small houses, right side
+    d.polygon([(x + w * 0.62, y + h * 0.62), (x + w, y + h * 0.62),
+               (x + w, y + h), (x + w * 0.62, y + h)], fill=(233, 224, 196),
+              outline=INK)
+    for hx, hy in [(0.68, 0.68), (0.80, 0.72), (0.90, 0.66)]:
+        d.rectangle([x + hx * w, y + hy * h, x + hx * w + 12, y + hy * h + 9],
+                    fill=CREAM, outline=INK)
+        d.polygon([(x + hx * w - 1, y + hy * h),
+                   (x + hx * w + 6, y + hy * h - 6),
+                   (x + hx * w + 13, y + hy * h)], fill=RED, outline=INK)
+    # waves
+    for wy in (0.80, 0.90):
+        d.arc([x + w * 0.05, y + h * wy, x + w * 0.35, y + h * wy + 8],
+              180, 360, fill=(255, 255, 255), width=2)
+    # big spiral, centred left, radii scaled to height (max radius keeps
+    # the arcs inside the illustration box)
+    cx, cy = x + w * 0.36, y + h * 0.44
+    for r in (0.12, 0.20, 0.28, 0.36, 0.41):
         rr = h * r
         d.arc([cx - rr, cy - rr, cx + rr, cy + rr], 20, 300, fill=NAVY,
-              width=2)
-    d.ellipse([cx - 2, cy - 2, cx + 2, cy + 2], fill=RED)
+              width=3)
+    d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=RED)
+    # red arrow from the spiral toward the coast
+    d.line([cx + w * 0.16, cy + h * 0.10, x + w * 0.60, cy + h * 0.16],
+           fill=RED, width=2)
+    d.polygon([(x + w * 0.60, cy + h * 0.16), (x + w * 0.55, cy + h * 0.10),
+               (x + w * 0.55, cy + h * 0.22)], fill=RED)
 
 
 def ill_seoul(d, x, y, w, h):
+    """Seoul: a small courthouse with columns and a Korean flag, a big
+    gavel striking, and a red OVERTURNED stamp."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[3])
-    # gavel
-    d.line([x + w * 0.30, y + h * 0.25, x + w * 0.70, y + h * 0.55],
-           fill=(120, 80, 40), width=4)
-    d.rounded_rectangle([x + w * 0.55, y + h * 0.12, x + w * 0.80,
-                         y + h * 0.32], radius=4, fill=NAVY, outline=INK)
-    d.rectangle([x + w * 0.15, y + h * 0.70, x + w * 0.55, y + h * 0.78],
+    d.rectangle([x, y + h * 0.86, x + w, y + h], fill=(233, 224, 196))
+    # courthouse, left
+    cx0, cx1 = x + w * 0.04, x + w * 0.42
+    base = y + h * 0.86
+    d.polygon([(cx0 - 2, y + h * 0.30), ((cx0 + cx1) / 2, y + h * 0.12),
+               (cx1 + 2, y + h * 0.30)], fill=NAVY, outline=INK)
+    d.rectangle([cx0, y + h * 0.30, cx1, y + h * 0.34], fill=CREAM,
+                outline=INK)
+    for i in range(3):
+        px = cx0 + w * 0.05 + i * w * 0.115
+        d.rectangle([px, y + h * 0.34, px + w * 0.045, base], fill=CREAM,
+                    outline=INK)
+    d.rectangle([cx0, base - 3, cx1, base], fill=NAVY)
+    # Korean flag on a pole above the courthouse
+    d.line([x + w * 0.23, y + h * 0.02, x + w * 0.23, y + h * 0.12],
+           fill=INK, width=2)
+    d.rectangle([x + w * 0.23, y + h * 0.02, x + w * 0.23 + 16, y + h * 0.10],
+                fill=(255, 255, 255), outline=INK)
+    d.ellipse([x + w * 0.23 + 5, y + h * 0.02 + 2, x + w * 0.23 + 11,
+               y + h * 0.10 - 2], fill=RED, outline=INK)
+    # gavel, centre-right, diagonal
+    d.line([x + w * 0.52, y + h * 0.62, x + w * 0.88, y + h * 0.18],
+           fill=(120, 80, 40), width=5)
+    d.rounded_rectangle([x + w * 0.70, y + h * 0.06, x + w * 0.96,
+                         y + h * 0.28], radius=4, fill=NAVY, outline=INK)
+    # sound block
+    d.rectangle([x + w * 0.48, y + h * 0.72, x + w * 0.72, y + h * 0.80],
                 fill=NAVY, outline=INK)
-    # OVERTURNED stamp
+    # OVERTURNED stamp, bottom right
     sf = sans_b(10)
     st = "OVERTURNED"
     tw = d.textlength(st, font=sf)
-    d.rectangle([x + w * 0.52, y + h * 0.62, x + w * 0.52 + tw + 8,
-                 y + h * 0.62 + 16], fill=RED)
-    d.text((x + w * 0.52 + 4, y + h * 0.62 + 2), st, font=sf,
+    d.rectangle([x + w - tw - 12, y + h * 0.66, x + w - 4,
+                 y + h * 0.66 + 16], fill=RED)
+    d.text((x + w - tw - 8, y + h * 0.66 + 2), st, font=sf,
            fill=(255, 255, 255))
 
 
 def ill_greenland(d, x, y, w, h):
+    """Greenland: two big snow peaks filling the card, Danish and US
+    flags planted on them, a red 109-0 badge and sea at the bottom."""
     d.rectangle([x, y, x + w, y + h], fill=SKY)
-    d.polygon([(x, y + h), (x + w * 0.30, y + h * 0.30),
-               (x + w * 0.55, y + h)], fill=(250, 250, 246), outline=INK)
-    d.polygon([(x + w * 0.40, y + h), (x + w * 0.68, y + h * 0.18),
-               (x + w * 0.95, y + h)], fill=(230, 235, 240), outline=INK)
-    d.rectangle([x, y + h * 0.82, x + w, y + h], fill=(168, 205, 225))
-    # two small flags
-    d.line([x + w * 0.12, y + h * 0.10, x + w * 0.12, y + h * 0.34],
+    # mountains, full width
+    d.polygon([(x, y + h), (x + w * 0.28, y + h * 0.16),
+               (x + w * 0.56, y + h)], fill=(250, 250, 246), outline=INK)
+    d.polygon([(x + w * 0.22, y + h * 0.30), (x + w * 0.28, y + h * 0.16),
+               (x + w * 0.34, y + h * 0.30)], fill=(200, 220, 235))
+    d.polygon([(x + w * 0.44, y + h), (x + w * 0.72, y + h * 0.08),
+               (x + w, y + h)], fill=(230, 235, 240), outline=INK)
+    d.polygon([(x + w * 0.66, y + h * 0.24), (x + w * 0.72, y + h * 0.08),
+               (x + w * 0.78, y + h * 0.24)], fill=(200, 220, 235))
+    # sea
+    d.rectangle([x, y + h * 0.86, x + w, y + h], fill=(120, 180, 210))
+    d.line([x + w * 0.10, y + h * 0.92, x + w * 0.30, y + h * 0.92],
+           fill=(255, 255, 255), width=1)
+    # Danish flag on the left peak, US flag on the right peak
+    d.line([x + w * 0.28, y + h * 0.02, x + w * 0.28, y + h * 0.18],
            fill=INK, width=2)
-    d.rectangle([x + w * 0.12, y + h * 0.10, x + w * 0.22, y + h * 0.18],
-                fill=RED, outline=INK)
-    d.line([x + w * 0.82, y + h * 0.10, x + w * 0.82, y + h * 0.34],
+    d.rectangle([x + w * 0.28, y + h * 0.02, x + w * 0.28 + 16,
+                 y + h * 0.02 + 11], fill=RED, outline=INK)
+    d.rectangle([x + w * 0.28, y + h * 0.02 + 4, x + w * 0.28 + 16,
+                 y + h * 0.02 + 7], fill=(255, 255, 255))
+    d.rectangle([x + w * 0.28 + 6, y + h * 0.02, x + w * 0.28 + 9,
+                 y + h * 0.02 + 11], fill=(255, 255, 255))
+    d.line([x + w * 0.72, y + h * 0.02, x + w * 0.72, y + h * 0.10],
            fill=INK, width=2)
-    d.rectangle([x + w * 0.82, y + h * 0.10, x + w * 0.92, y + h * 0.18],
-                fill=NAVY, outline=INK)
-    bf = sans_b(11)
-    d.text((x + w * 0.38, y + h * 0.06), "109-0", font=bf, fill=RED)
+    d.rectangle([x + w * 0.72, y + h * 0.02, x + w * 0.72 + 16,
+                 y + h * 0.02 + 11], fill=(255, 255, 255), outline=INK)
+    for s in range(3):
+        d.rectangle([x + w * 0.72, y + h * 0.02 + s * 4,
+                     x + w * 0.72 + 16, y + h * 0.02 + s * 4 + 2], fill=RED)
+    d.rectangle([x + w * 0.72, y + h * 0.02, x + w * 0.72 + 7,
+                 y + h * 0.02 + 6], fill=NAVY)
+    # 109-0 badge, centre bottom above the sea
+    bf = sans_b(12)
+    bt = "109-0"
+    tw = d.textlength(bt, font=bf)
+    d.rectangle([x + (w - tw) / 2 - 6, y + h * 0.62,
+                 x + (w - tw) / 2 + tw + 6, y + h * 0.62 + 18], fill=RED,
+                outline=INK)
+    d.text((x + (w - tw) / 2, y + h * 0.62 + 2), bt, font=bf,
+           fill=(255, 255, 255))
 
 
 def ill_anthropic(d, x, y, w, h):
-    d.rectangle([x, y, x + w, y + h], fill=TINTS[2])
-    d.rectangle([x + w * 0.06, y + h * 0.28, x + w * 0.30, y + h * 0.74],
-                fill=NAVY, outline=INK)
-    d.text((x + w * 0.10, y + h * 0.36), "ANT", font=sans_b(11),
-           fill=(255, 255, 255))
-    pts = [(x + w * 0.36, y + h * 0.72), (x + w * 0.50, y + h * 0.64),
-           (x + w * 0.62, y + h * 0.68), (x + w * 0.76, y + h * 0.44),
-           (x + w * 0.90, y + h * 0.24)]
+    """Anthropic: a Nasdaq exchange facade with a big ANT ticker on the
+    left, a rising chart as a small element on the right, +17% badge."""
+    d.rectangle([x, y, x + w, y + h], fill=(214, 232, 214))
+    # exchange facade, left third: columns + pediment + ANT sign
+    fx0, fx1 = x + w * 0.04, x + w * 0.34
+    base = y + h * 0.88
+    d.polygon([(fx0 - 2, y + h * 0.22), ((fx0 + fx1) / 2, y + h * 0.08),
+               (fx1 + 2, y + h * 0.22)], fill=NAVY, outline=INK)
+    d.rectangle([fx0, y + h * 0.22, fx1, y + h * 0.26], fill=CREAM,
+                outline=INK)
+    for i in range(3):
+        px = fx0 + w * 0.04 + i * w * 0.09
+        d.rectangle([px, y + h * 0.26, px + w * 0.035, base], fill=CREAM,
+                    outline=INK)
+    d.rectangle([fx0, base - 3, fx1, base], fill=NAVY)
+    # white exchange sign across the facade front with the ticker on it
+    d.rectangle([fx0 + 2, y + h * 0.46, fx1 - 2, y + h * 0.74], fill=CREAM,
+                outline=INK)
+    d.text((fx0 + w * 0.07, y + h * 0.48), "ANT", font=sans_b(13),
+           fill=NAVY)
+    d.text((fx0 + w * 0.05, y + h * 0.66), "NASDAQ", font=sans_b(7),
+           fill=NAVY)
+    # rising chart, right two thirds (a small element, not the card)
+    pts = [(x + w * 0.40, y + h * 0.76), (x + w * 0.52, y + h * 0.68),
+           (x + w * 0.62, y + h * 0.72), (x + w * 0.74, y + h * 0.50),
+           (x + w * 0.86, y + h * 0.54), (x + w * 0.94, y + h * 0.30)]
     d.line(pts, fill=RED, width=3)
-    d.polygon([(x + w * 0.90, y + h * 0.24), (x + w * 0.80, y + h * 0.22),
-               (x + w * 0.88, y + h * 0.36)], fill=RED)
+    d.polygon([(x + w * 0.94, y + h * 0.30), (x + w * 0.85, y + h * 0.28),
+               (x + w * 0.92, y + h * 0.42)], fill=RED)
     for px, py in pts:
         d.ellipse([px - 3, py - 3, px + 3, py + 3], fill=RED)
-    d.text((x + w * 0.62, y + h * 0.06), "+17%", font=sans_b(12), fill=RED)
+    # +17% badge, top right
+    bf = sans_b(12)
+    bt = "+17%"
+    tw = d.textlength(bt, font=bf)
+    d.rectangle([x + w - tw - 10, y + 4, x + w - 4, y + 22], fill=RED)
+    d.text((x + w - tw - 7, y + 6), bt, font=bf, fill=(255, 255, 255))
+    d.text((x + w * 0.40, y + h * 0.06), "FIRST DAY", font=sans_b(8),
+           fill=GREY)
 
 
 def ill_gta(d, x, y, w, h):
-    d.rectangle([x, y, x + w, y + h], fill=(200, 160, 220))
-    for bx, bw, bh in [(0.04, 0.10, 0.35), (0.16, 0.09, 0.50),
-                       (0.28, 0.10, 0.30), (0.62, 0.10, 0.45),
-                       (0.74, 0.09, 0.55), (0.86, 0.10, 0.32)]:
-        d.rectangle([x + bx * w, y + h * 0.88 - bh * h, x + (bx + bw) * w,
-                     y + h * 0.88], fill=NAVY)
-    d.rectangle([x, y + h * 0.88, x + w, y + h], fill=(233, 224, 196))
-    cx = x + w // 2
-    d.rounded_rectangle([cx - w * 0.16, y + h * 0.30, cx + w * 0.16,
-                         y + h * 0.66], radius=6, fill=INK)
-    d.ellipse([cx - w * 0.11, y + h * 0.36, cx - w * 0.04, y + h * 0.46],
-              fill=CREAM)
-    d.ellipse([cx + w * 0.04, y + h * 0.36, cx + w * 0.11, y + h * 0.46],
-              fill=RED)
-    d.ellipse([cx + w * 0.04, y + h * 0.52, cx + w * 0.11, y + h * 0.62],
-              fill=GOLD)
-    d.text((cx - w * 0.06, y + h * 0.06), "VI", font=serif_b(16),
+    """GTA VI: a purple dusk city skyline, a sunset, a car on the street
+    below and a big VI logo. No STRIKE label anywhere."""
+    d.rectangle([x, y, x + w, y + h], fill=(196, 150, 216))
+    # sunset, top centre-left - clear of the VI logo on the right
+    d.ellipse([x + w * 0.36, y + h * 0.08, x + w * 0.36 + 24,
+               y + h * 0.08 + 24], fill=(250, 200, 90), outline=INK)
+    # skyline silhouettes on both sides
+    for bx, bw, bh in [(0.02, 0.10, 0.34), (0.14, 0.09, 0.50),
+                       (0.25, 0.10, 0.30), (0.80, 0.09, 0.46),
+                       (0.90, 0.09, 0.32)]:
+        d.rectangle([x + bx * w, y + h * 0.78 - bh * h, x + (bx + bw) * w,
+                     y + h * 0.78], fill=NAVY)
+        for wy in (0.78 - bh * h + 0.06, 0.78 - bh * h + 0.14):
+            d.rectangle([x + (bx + 0.02) * w, y + h * wy,
+                         x + (bx + 0.05) * w, y + h * wy + 3], fill=GOLD)
+    # street
+    d.rectangle([x, y + h * 0.78, x + w, y + h], fill=(60, 50, 70))
+    d.line([x, y + h * 0.90, x + w, y + h * 0.90], fill=GOLD, width=2)
+    # car, side view, centre-left
+    cx0, cy = x + w * 0.30, y + h * 0.72
+    d.rounded_rectangle([cx0, cy - 8, cx0 + w * 0.34, cy + 6], radius=5,
+                        fill=RED, outline=INK)
+    d.polygon([(cx0 + w * 0.08, cy - 8), (cx0 + w * 0.12, cy - 18),
+               (cx0 + w * 0.24, cy - 18), (cx0 + w * 0.28, cy - 8)],
+              fill=RED, outline=INK)
+    d.rectangle([cx0 + w * 0.13, cy - 16, cx0 + w * 0.23, cy - 8],
+                fill=SKY, outline=INK)
+    for wx in (0.07, 0.25):
+        d.ellipse([cx0 + wx * w - 5, cy + 2, cx0 + wx * w + 5, cy + 12],
+                  fill=INK, outline=(255, 255, 255))
+    # big VI logo, top right
+    d.text((x + w * 0.72, y + h * 0.02), "VI", font=serif_b(24),
+           fill=(255, 255, 255))
+    d.text((x + w * 0.68, y + h * 0.44), "OUT NOW", font=sans_b(9),
            fill=(255, 255, 255))
 
 
 def ill_bogota(d, x, y, w, h):
+    """Bogota: a street protest - buildings behind, a two-row crowd of
+    marchers with raised placards, a PARO NACIONAL banner on top and a
+    Colombian tricolour stripe. No STRIKE label."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[3])
-    # crowd of heads + placards
-    for i, cx in enumerate([0.12, 0.28, 0.44, 0.60, 0.76, 0.90]):
-        col = [RED, NAVY, GOLD, (60, 140, 90), RED, NAVY][i]
-        d.ellipse([x + cx * w - 7, y + h * 0.52, x + cx * w + 7,
-                   y + h * 0.52 + 14], fill=col, outline=INK)
-        d.rectangle([x + cx * w - 9, y + h * 0.66, x + cx * w + 9,
-                     y + h * 0.92], fill=col, outline=INK)
-    d.rectangle([x + w * 0.30, y + h * 0.10, x + w * 0.70, y + h * 0.30],
+    # buildings behind the crowd
+    for bx, bw, bh in [(0.02, 0.14, 0.34), (0.18, 0.12, 0.44),
+                       (0.70, 0.13, 0.38), (0.85, 0.13, 0.46)]:
+        d.rectangle([x + bx * w, y + h * 0.52 - bh * h, x + (bx + bw) * w,
+                     y + h * 0.52], fill=NAVY)
+    # Colombian tricolour stripe + PARO NACIONAL banner, top
+    d.rectangle([x, y, x + w, y + h * 0.10], fill=GOLD)
+    d.rectangle([x, y + h * 0.10, x + w, y + h * 0.16], fill=NAVY)
+    d.rectangle([x, y + h * 0.16, x + w, y + h * 0.22], fill=RED)
+    bf = sans_b(10)
+    bt = "PARO NACIONAL"
+    tw = d.textlength(bt, font=bf)
+    d.rectangle([x + (w - tw) / 2 - 6, y + h * 0.24,
+                 x + (w - tw) / 2 + tw + 6, y + h * 0.24 + 14],
                 fill=CREAM, outline=INK)
-    d.text((x + w * 0.36, y + h * 0.14), "STRIKE", font=sans_b(11), fill=RED)
+    d.text((x + (w - tw) / 2, y + h * 0.24 + 2), bt, font=bf, fill=INK)
+    # crowd: two rows of marchers, heads + bodies, varied colours
+    cols = [RED, NAVY, (60, 140, 90), GOLD, RED, NAVY]
+    for i, cx in enumerate([0.10, 0.26, 0.42, 0.58, 0.74, 0.90]):
+        col = cols[i]
+        d.ellipse([x + cx * w - 6, y + h * 0.62, x + cx * w + 6,
+                   y + h * 0.62 + 12], fill=(240, 200, 160), outline=INK)
+        d.rectangle([x + cx * w - 8, y + h * 0.74, x + cx * w + 8,
+                     y + h * 0.96], fill=col, outline=INK)
+    for i, cx in enumerate([0.18, 0.34, 0.50, 0.66, 0.82]):
+        col = cols[(i + 2) % 6]
+        d.ellipse([x + cx * w - 6, y + h * 0.50, x + cx * w + 6,
+                   y + h * 0.50 + 12], fill=(240, 200, 160), outline=INK)
+        d.rectangle([x + cx * w - 8, y + h * 0.62, x + cx * w + 8,
+                     y + h * 0.80], fill=col, outline=INK)
+    # raised placards above the back row
+    for px in (0.34, 0.66):
+        d.line([x + px * w, y + h * 0.50, x + px * w, y + h * 0.40],
+               fill=INK, width=2)
+        d.rectangle([x + px * w - 11, y + h * 0.40, x + px * w + 11,
+                     y + h * 0.40 + 10], fill=CREAM, outline=INK)
 
 
 def ill_nairobi(d, x, y, w, h):
+    """Nairobi marathon: a real runner mid-stride on a track, leaning
+    into a checkered finish gantry, with a red BANNED 3 YEARS stamp.
+    No stick figure - torso, shorts, and thick limbs."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[1])
-    d.rectangle([x, y + h * 0.78, x + w, y + h], fill=(196, 120, 60))
-    # runner silhouette
-    cx, cy = x + w * 0.40, y + h * 0.45
-    d.ellipse([cx - 6, cy - 16, cx + 6, cy - 4], fill=INK)
-    d.line([cx, cy - 4, cx + 2, cy + 12], fill=INK, width=4)
-    d.line([cx, cy - 2, cx - 12, cy + 6], fill=INK, width=3)
-    d.line([cx, cy - 2, cx + 12, cy - 6], fill=INK, width=3)
-    d.line([cx + 2, cy + 12, cx - 8, cy + 26], fill=INK, width=3)
-    d.line([cx + 2, cy + 12, cx + 12, cy + 24], fill=INK, width=3)
+    # sky + distant stands
+    d.rectangle([x, y + h * 0.52, x + w, y + h * 0.60], fill=NAVY)
+    for i in range(9):
+        d.ellipse([x + w * 0.05 + i * w * 0.10, y + h * 0.54,
+                   x + w * 0.05 + i * w * 0.10 + 4, y + h * 0.54 + 4],
+                  fill=CREAM)
+    # track
+    d.rectangle([x, y + h * 0.60, x + w, y + h], fill=(196, 120, 60))
+    d.line([x, y + h * 0.72, x + w, y + h * 0.72], fill=(255, 255, 255),
+           width=1)
+    # finish gantry, right: two posts + checkered top bar
+    gx = x + w * 0.80
+    d.rectangle([gx, y + h * 0.10, gx + 4, y + h * 0.96], fill=INK)
+    d.rectangle([x + w * 0.97, y + h * 0.10, x + w * 0.97 + 4,
+                 y + h * 0.96], fill=INK)
+    for i in range(8):
+        sq = gx + 4 + i * (x + w * 0.97 - gx - 4) / 8
+        d.rectangle([sq, y + h * 0.10, sq + (x + w * 0.97 - gx - 4) / 8,
+                     y + h * 0.10 + 8],
+                    fill=INK if i % 2 == 0 else (255, 255, 255))
+    # tape across the track at the gantry
+    d.line([gx, y + h * 0.62, gx, y + h * 0.96], fill=(255, 255, 255),
+           width=2)
+    # runner, mid-stride, leaning forward toward the gantry - drawn
+    # large: head, torso, shorts and thick limbs, not a stick figure
+    hx, hy = x + w * 0.36, y + h * 0.26   # head centre
+    skin = (150, 90, 60)
+    d.ellipse([hx - 9, hy - 9, hx + 9, hy + 9], fill=skin, outline=INK)
+    # torso (leaning) + shorts
+    d.polygon([(hx - 5, hy + 8), (hx + 10, hy + 5), (hx + 15, hy + 30),
+               (hx - 2, hy + 33)], fill=RED, outline=INK)
+    d.polygon([(hx - 2, hy + 30), (hx + 15, hy + 28), (hx + 16, hy + 40),
+               (hx - 1, hy + 42)], fill=NAVY, outline=INK)
+    # arms: one pumping forward, one back
+    d.line([hx + 8, hy + 12, hx + 24, hy + 3], fill=skin, width=6)
+    d.line([hx + 24, hy + 3, hx + 31, hy + 15], fill=skin, width=6)
+    d.line([hx - 3, hy + 12, hx - 17, hy + 24], fill=skin, width=6)
+    d.line([hx - 17, hy + 24, hx - 7, hy + 33], fill=skin, width=6)
+    # legs: front leg bent forward, back leg trailing
+    d.line([hx + 5, hy + 40, hx + 22, hy + 54], fill=skin, width=6)
+    d.line([hx + 22, hy + 54, hx + 19, hy + 68], fill=skin, width=6)
+    d.line([hx + 10, hy + 40, hx - 7, hy + 52], fill=skin, width=6)
+    d.line([hx - 7, hy + 52, hx - 19, hy + 61], fill=skin, width=6)
+    # shoes
+    d.ellipse([hx + 14, hy + 66, hx + 26, hy + 73], fill=(255, 255, 255),
+              outline=INK)
+    d.ellipse([hx - 24, hy + 59, hx - 12, hy + 66], fill=(255, 255, 255),
+              outline=INK)
+    # BANNED 3 YEARS stamp, top left
     sf = sans_b(10)
-    st = "BANNED"
+    st = "BANNED 3 YEARS"
     tw = d.textlength(st, font=sf)
-    d.rectangle([x + w * 0.58, y + h * 0.16, x + w * 0.58 + tw + 8,
-                 y + h * 0.16 + 16], fill=RED)
-    d.text((x + w * 0.58 + 4, y + h * 0.16 + 2), st, font=sf,
-           fill=(255, 255, 255))
-    d.text((x + w * 0.60, y + h * 0.40), "3 YEARS", font=sans_b(10),
-           fill=INK)
+    d.rectangle([x + 4, y + 4, x + 4 + tw + 8, y + 20], fill=RED)
+    d.text((x + 8, y + 6), st, font=sf, fill=(255, 255, 255))
 
 
 def ill_canberra(d, x, y, w, h):
+    """Canberra: Parliament House with its flag mast on a lawn, and a
+    small falling chart as a minor element on the right."""
     d.rectangle([x, y, x + w, y + h], fill=TINTS[4])
-    for i, bh in enumerate([0.50, 0.42, 0.34, 0.26]):
-        bx = x + w * 0.10 + i * w * 0.14
-        d.rectangle([bx, y + h * 0.88 - h * bh, bx + w * 0.09, y + h * 0.88],
-                    fill=NAVY)
-    pts = [(x + w * 0.62, y + h * 0.30), (x + w * 0.74, y + h * 0.44),
-           (x + w * 0.86, y + h * 0.58), (x + w * 0.94, y + h * 0.72)]
+    # lawn
+    d.rectangle([x, y + h * 0.80, x + w, y + h], fill=(90, 160, 90))
+    # Parliament House, left two thirds: low building + flag mast
+    px0, px1 = x + w * 0.05, x + w * 0.58
+    base = y + h * 0.80
+    d.rectangle([px0, y + h * 0.42, px1, base], fill=CREAM, outline=INK)
+    d.polygon([(px0 - 2, y + h * 0.42), ((px0 + px1) / 2, y + h * 0.28),
+               (px1 + 2, y + h * 0.42)], fill=NAVY, outline=INK)
+    for i in range(4):
+        cx = px0 + w * 0.06 + i * w * 0.115
+        d.rectangle([cx, y + h * 0.46, cx + w * 0.045, base], fill=NAVY,
+                    outline=INK)
+    d.rectangle([px0 + w * 0.20, y + h * 0.62, px0 + w * 0.30, base],
+                fill=NAVY, outline=INK)
+    # flag mast rising from the roof
+    mx = (px0 + px1) / 2
+    d.line([mx, y + h * 0.28, mx, y + h * 0.04], fill=INK, width=2)
+    d.rectangle([mx, y + h * 0.04, mx + 16, y + h * 0.04 + 10],
+                fill=NAVY, outline=INK)
+    d.ellipse([mx + 3, y + h * 0.04 + 2, mx + 8, y + h * 0.04 + 8],
+              fill=(255, 255, 255))
+    # small falling chart, right
+    pts = [(x + w * 0.64, y + h * 0.30), (x + w * 0.72, y + h * 0.44),
+           (x + w * 0.80, y + h * 0.40), (x + w * 0.88, y + h * 0.56),
+           (x + w * 0.95, y + h * 0.68)]
     d.line(pts, fill=RED, width=3)
+    d.polygon([(x + w * 0.95, y + h * 0.68), (x + w * 0.87, y + h * 0.66),
+               (x + w * 0.93, y + h * 0.56)], fill=RED)
     for px, py in pts:
         d.ellipse([px - 3, py - 3, px + 3, py + 3], fill=RED)
-    d.text((x + w * 0.60, y + h * 0.06), "4.9%", font=sans_b(13), fill=RED)
+    d.text((x + w * 0.66, y + h * 0.06), "4.9%", font=sans_b(13), fill=RED)
 
 
 ILL = {"apec": ill_apec, "icj": ill_icj, "cop": ill_cop,
@@ -568,17 +882,17 @@ HERO = [
     (1, "APEC 2026 · SHENZHEN",
      "Trump, Xi and Putin hold first three-way summit",
      "The US, Chinese and Russian leaders meet for ~90 minutes and issue "
-     "a \u201cDeclaration on Peace\u201d on nuclear risk and UN reform.",
+     "a \u201cDeclaration on Peace\u201d on nuclear risk.",
      "Reuters · AP · Xinhua", "CONFIRMED", "apec"),
     (2, "THE HAGUE · JUSTICE",
      "World Court: Myanmar committed genocide",
      "By 9 votes to 6 the court finds Myanmar guilty of genocide against "
-     "the Rohingya and orders reparations.",
+     "the Rohingya.",
      "Al Jazeera · UN News", "CONFIRMED", "icj"),
     (3, "ANTALYA · CLIMATE",
      "COP31 draft drops fossil fuels and $120bn aid goal",
-     "The draft text drops fossil fuels and sets a $120bn adaptation-aid "
-     "goal. Talks are due to end on Friday.",
+     "The draft drops fossil fuels and a $120bn adaptation-aid goal. "
+     "Talks end Friday.",
      "Reuters · AFP", "REPORTED", "cop"),
 ]
 
@@ -600,7 +914,7 @@ CARDS = [
      "Parliament approves the Greenland security deal 109\u20130.",
      "AP", "CONFIRMED", "greenland"),
     (9, "NEW YORK · MARKETS", "Anthropic starts trading on Nasdaq",
-     "Shares jump 17% on the first day after the record $81bn sale.",
+     "Shares jump 17% on the first day after the record $81.3bn sale.",
      "AP", "CONFIRMED", "anthropic"),
     (10, "WORLDWIDE · GAMES", "GTA VI goes on sale after 13 years",
      "The midnight launch draws rave reviews.",
@@ -636,7 +950,7 @@ BRIEFS = [
     (29, "FLORIDA", "Floods shut Broward, Miami schools again.", "CBS"),
     (30, "WELLINGTON", "Court: pay equity cuts broke rights law.", "RNZ"),
     (31, "TONGA", "Drought emergency takes effect.", "RNZ"),
-    (32, "COOK ISLANDS", "Cyclone Xavier weakens to category 4.", "RNZ"),
+    (32, "COOK ISLANDS", "Cyclone Xavier now category 4.", "RNZ"),
     (33, "SPACE", "Red giant seen eating a Sun-sized star.", "Nature"),
     (34, "SENEGAL", "Boat capsizes off Yenne; dozens missing.", ""),
     (35, "CEPU", "Refinery blast kills one worker.", ""),
@@ -687,26 +1001,26 @@ SUBLINE = ("Trump, Xi and Putin share one table \u00b7 The World Court finds "
            "genocide in Myanmar \u00b7 COP31\u2019s draft drops fossil fuels")
 
 # Timeline rail: (label, band top y, band bottom y)
-X0 = 64                      # content left edge (right of the rail)
+X0 = 46                      # content left edge (right of the rail)
 X1 = 1010
 CW2 = X1 - X0
-SPINE_X = 52
-RAIL_LABEL_X = 20
+SPINE_X = 36
+RAIL_LABEL_X = 10
 
 Y_MASTHEAD = 0
 Y_CONT = 106
 Y_NUM = 128
-Y_HERO = 162
-H_HERO = 204
-Y_C1 = 370
-Y_C2 = 504
-H_CARD = 130
-Y_MAP = 638
-H_MAP = 168
-Y_LEGEND = 810
-Y_DATE = 832
-H_DATE = 96
-Y_FOOT = 944
+Y_HERO = 164
+H_HERO = 250
+Y_C1 = 420
+Y_C2 = 566
+H_CARD = 140
+Y_MAP = 712
+H_MAP = 148
+Y_LEGEND = 864
+Y_DATE = 876
+H_DATE = 76
+Y_FOOT = 972
 
 
 def draw_masthead(d):
@@ -769,8 +1083,8 @@ def draw_hero(d):
     for i, (num, kick, head, deck, src, tag, ill_key) in enumerate(HERO):
         x = X0 + i * (pw + 6)
         d.rectangle([x, Y_HERO, x + pw, Y_HERO + H_HERO], outline=INK, width=1)
-        ILL[ill_key](d, x + 1, Y_HERO + 1, pw - 2, 102)
-        ty = Y_HERO + 108
+        ILL[ill_key](d, x + 1, Y_HERO + 1, pw - 2, 148)
+        ty = Y_HERO + 152
         num_circle(d, x + 10, ty + 7, num, r=8)
         tracked(d, (x + 24, ty), kick, sans_b(9), RED, track=1)
         hf = serif_b(15)
@@ -780,15 +1094,15 @@ def draw_hero(d):
         hy = ty + 18
         for ln in hlines[:2]:
             d.text((x + 6, hy), ln, font=hf, fill=INK)
-            hy += 18
+            hy += 17
         df = sans(9)
         dlines = wrap(d, deck, df, pw - 12)
-        if len(dlines) > 3:
+        if len(dlines) > 2:
             print(f"OVERFLOW hero deck {num}: {dlines}")
         dy = hy + 2
-        for ln in dlines[:3]:
+        for ln in dlines[:2]:
             d.text((x + 6, dy), ln, font=df, fill=INK)
-            dy += 12
+            dy += 11
         sf = sans(8)
         d.text((x + 6, Y_HERO + H_HERO - 14),
                f"\u2014 {src} \u00b7 {tag}", font=sf, fill=GREY)
@@ -799,18 +1113,18 @@ def draw_cards(d, y0, cards):
     for i, (num, kick, head, deck, src, tag, ill_key) in enumerate(cards):
         x = X0 + i * (cw + 6)
         d.rectangle([x, y0, x + cw, y0 + H_CARD], outline=INK, width=1)
-        ILL[ill_key](d, x + 1, y0 + 1, cw - 2, 50)
-        ty = y0 + 56
+        ILL[ill_key](d, x + 1, y0 + 1, cw - 2, 64)
+        ty = y0 + 68
         num_circle(d, x + 9, ty + 6, num, r=7)
         tracked(d, (x + 20, ty), kick, sans_b(8), RED, track=1)
         hf = serif_b(11)
         hlines = wrap(d, head, hf, cw - 10)
         if len(hlines) > 2:
             print(f"OVERFLOW card headline {num}: {hlines}")
-        hy = ty + 15
+        hy = ty + 14
         for ln in hlines[:2]:
             d.text((x + 5, hy), ln, font=hf, fill=INK)
-            hy += 13
+            hy += 12
         df = sans(8)
         dlines = wrap(d, deck, df, cw - 10)
         if len(dlines) > 2:
@@ -818,16 +1132,16 @@ def draw_cards(d, y0, cards):
         dy = hy + 1
         for ln in dlines[:2]:
             d.text((x + 5, dy), ln, font=df, fill=INK)
-            dy += 11
+            dy += 10
         sf = sans(7)
         d.text((x + 5, y0 + H_CARD - 11), f"\u2014 {src} \u00b7 {tag}",
                font=sf, fill=GREY)
 
 
 def draw_map_briefs(d):
-    # --- map (left)
+    # --- map (left, widened to 340 so pins stop crowding)
     tracked(d, (X0, Y_MAP), "WHERE IT HAPPENED", sans_b(10), INK, track=2)
-    mx, my, mw, mh = X0, Y_MAP + 16, 300, H_MAP - 16
+    mx, my, mw, mh = X0, Y_MAP + 16, 340, H_MAP - 16
     d.rectangle([mx, my, mx + mw, my + mh], fill=MAP_BG, outline=INK)
     for poly in POLYS:
         pts = [project(lon, lat, mx, my, mw, mh) for lon, lat in poly]
@@ -837,7 +1151,7 @@ def draw_map_briefs(d):
         d.ellipse([px - 2, py - 2, px + 2, py + 2], fill=RED)
     for num, lon, lat in PINS:
         px, py = project(lon, lat, mx, my, mw, mh)
-        num_circle(d, px, py, num, r=7)
+        num_circle(d, px, py, num, r=6)
     # space story 33: star, top-right of the map
     sx, sy = mx + mw - 14, my + 14
     star = []
@@ -857,7 +1171,7 @@ def draw_map_briefs(d):
         cx = bx0 + ci * (col_w + 12)
         for ri, (num, place, text, src) in enumerate(
                 BRIEFS[ci * 11:(ci + 1) * 11]):
-            y = Y_MAP + 16 + ri * 14
+            y = Y_MAP + 14 + ri * 12.2
             full = f"{num}. {place} \u2014 {text}"
             if src:
                 full += f" {src}"
